@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('transaksis', function (Blueprint $table) {
@@ -13,7 +14,7 @@ return new class extends Migration {
             $table->foreignId('buku_id')->constrained()->cascadeOnDelete();
             $table->date('tanggal_pinjam');
             $table->date('tanggal_kembali')->nullable();
-            $table->enum('status', ['dipinjam', 'dikembalikan', 'hilang']);
+            $table->enum('status', ['menunggu_konfirmasi', 'ditolak', 'dipinjam', 'dikembalikan', 'hilang']);
             $table->timestamps();
         });
     }
@@ -23,4 +24,3 @@ return new class extends Migration {
         Schema::dropIfExists('transaksis');
     }
 };
-

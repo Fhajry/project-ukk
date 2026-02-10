@@ -9,7 +9,8 @@
                 <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </h3>
             <p class="text-muted mb-0">
-                Selamat datang kembali, <strong>{{ auth()->user()->name }}</strong>. Apa yang ingin Anda lakukan hari ini?
+                Selamat datang kembali, <strong>{{ auth()->user()->name }}</strong>. Apa yang ingin Anda lakukan hari
+                ini?
             </p>
         </div>
         <div>
@@ -21,7 +22,7 @@
 
     <div class="row g-3 mb-4">
 
-    @if(auth()->user()->role === 'admin')
+        @if(auth()->user()->role === 'admin')
         {{-- TOTAL BUKU --}}
         <div class="col-md-3">
             <div class="card shadow-sm border-0 text-center p-3">
@@ -60,7 +61,7 @@
             </div>
         </div>
 
-    @else
+        @else
         {{-- USER: DIPINJAM --}}
         <div class="col-md-4">
             <div class="card shadow-sm border-0 text-center p-3">
@@ -89,9 +90,9 @@
                 </h4>
             </div>
         </div>
-    @endif
+        @endif
 
-</div>
+    </div>
 
 
     <hr class="my-4 opacity-25">
@@ -100,55 +101,55 @@
     <h5 class="fw-bold mb-3 text-dark">Akses Cepat</h5>
     <div class="row g-3">
         @if (auth()->user()->role === 'admin')
-            {{-- ADMIN MENU --}}
-            <div class="col-md-4">
-                <a href="/buku" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-start">
-                            <div class="bg-primary text-white rounded-3 p-3 me-3">
-                                <i class="bi bi-database-gear fs-3"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-1">Kelola Data Buku</h6>
-                                <p class="text-muted small mb-0">Tambah, edit, atau hapus koleksi buku perpustakaan.</p>
-                            </div>
+        {{-- ADMIN MENU --}}
+        <div class="col-md-4">
+            <a href="/buku" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-primary text-white rounded-3 p-3 me-3">
+                            <i class="bi bi-database-gear fs-3"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Kelola Data Buku</h6>
+                            <p class="text-muted small mb-0">Tambah, edit, atau hapus koleksi buku perpustakaan.</p>
                         </div>
                     </div>
-                </a>
-            </div>
-            {{-- Tambahkan menu admin lain di sini nantinya --}}
+                </div>
+            </a>
+        </div>
+        {{-- Tambahkan menu admin lain di sini nantinya --}}
         @else
-            {{-- USER MENU --}}
-            <div class="col-md-6">
-                <a href="/buku" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-start">
-                            <div class="bg-info text-white rounded-3 p-3 me-3">
-                                <i class="bi bi-search fs-3"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-1">Lihat & Pinjam Buku</h6>
-                                <p class="text-muted small mb-0">Cari buku favoritmu dan lakukan peminjaman online.</p>
-                            </div>
+        {{-- USER MENU --}}
+        <div class="col-md-6">
+            <a href="/user/buku" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-info text-white rounded-3 p-3 me-3">
+                            <i class="bi bi-search fs-3"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Lihat & Pinjam Buku</h6>
+                            <p class="text-muted small mb-0">Cari buku favoritmu dan lakukan peminjaman online.</p>
                         </div>
                     </div>
-                </a>
-            </div>
-            <div class="col-md-6">
-                <a href="/riwayat" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-start">
-                            <div class="bg-warning text-white rounded-3 p-3 me-3">
-                                <i class="bi bi-clock-history fs-3"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-1">Riwayat Peminjaman</h6>
-                                <p class="text-muted small mb-0">Cek status buku yang sedang dipinjam atau dikembalikan.</p>
-                            </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="/riwayat" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-warning text-white rounded-3 p-3 me-3">
+                            <i class="bi bi-clock-history fs-3"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Riwayat Peminjaman</h6>
+                            <p class="text-muted small mb-0">Cek status buku yang sedang dipinjam atau dikembalikan.</p>
                         </div>
                     </div>
-                </a>
-            </div>
+                </div>
+            </a>
+        </div>
         @endif
     </div>
 </div>
@@ -157,9 +158,10 @@
     .hover-card {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
     .hover-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
         border-left: 4px solid #0d6efd !important;
     }
 </style>

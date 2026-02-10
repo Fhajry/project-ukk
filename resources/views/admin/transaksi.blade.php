@@ -6,15 +6,18 @@
     <div class="card border-0 shadow-sm">
         {{-- HEADER --}}
         <div class="card-header bg-white border-0 py-3">
-            <div class="d-flex align-items-center">
-                <div class="icon-shape bg-primary-subtle text-primary rounded-circle me-3">
-                    <i class="bi bi-journal-text fs-4"></i>
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="icon-shape bg-primary-subtle text-primary rounded-circle me-3">
+                        <i class="bi bi-journal-text fs-4"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Data Transaksi</h4>
+                        <p class="mb-0 text-muted small">Kelola peminjaman dan pengembalian buku.</p>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="mb-0 fw-bold">Data Transaksi</h4>
-                    <small class="text-muted">
-                        Total transaksi: {{ $transaksis->count() }}
-                    </small>
+                <div class="text-end">
+                    <span class="badge bg-primary rounded-pill">{{ $transaksis->count() }} Total Transaksi</span>
                 </div>
             </div>
         </div>
@@ -22,97 +25,147 @@
         {{-- BODY --}}
         <div class="card-body">
 
+            {{-- Flash Message --}}
+            @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            @endif
+
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light text-uppercase small">
                         <tr>
-                            <th>User</th>
-                            <th>Buku</th>
+                            <th class="ps-3">Peminjam & Buku</th>
                             <th>Tgl Pinjam</th>
                             <th>Jatuh Tempo</th>
                             <th class="text-center">Status</th>
                             <th class="text-end">Denda</th>
-                            <th class="text-center">Aksi</th>
+                            <th class="text-center" style="width: 220px;">Aksi</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse ($transaksis as $t)
+                        @forelse ($transaksis as $item)
                         <tr>
-                            <td class="fw-semibold">
-                                {{ $t->user->name }}
+                            {{-- 1. User & Buku --}}
+                            <td class="ps-3">
+                                <div class="fw-bold text-dark">{{ $item->user->name }}</div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-book me-1"></i> {{ $item->buku->judul }}
+                                </div>
                             </td>
 
+                            {{-- 2. Tgl Pinjam --}}
                             <td>
-                                {{ $t->buku->judul }}
-                            </td>
-
-                            <td>
-                                {{ \Carbon\Carbon::parse($t->tanggal_pinjam)->format('d M Y') }}
-                            </td>
-
-                            <td>
-                                {{ \Carbon\Carbon::parse($t->tanggal_jatuh_tempo)->format('d M Y') }}
-                            </td>
-
-                            <td class="text-center">
-                                @if ($t->status === 'dipinjam')
-                                    <span class="badge bg-warning-subtle text-warning px-3 rounded-pill">
-                                        Dipinjam
-                                    </span>
-                                @elseif ($t->status === 'dikembalikan')
-                                    <span class="badge bg-success-subtle text-success px-3 rounded-pill">
-                                        Dikembalikan
-                                    </span>
+                                @if($item->tanggal_pinjam)
+                                {{ \Carbon\Carbon::parse($item->tanggal_pinjam)->format('d M Y') }}
                                 @else
-                                    <span class="badge bg-danger-subtle text-danger px-3 rounded-pill">
-                                        Hilang
-                                    </span>
+                                <span class="text-muted small fst-italic">-</span>
                                 @endif
                             </td>
 
+                            {{-- 3. Jatuh Tempo --}}
+                            <td>
+                                @if($item->tanggal_jatuh_tempo)
+                                {{ \Carbon\Carbon::parse($item->tanggal_jatuh_tempo)->format('d M Y') }}
+                                @else
+                                <span class="text-muted small fst-italic">-</span>
+                                @endif
+                            </td>
+
+                            {{-- 4. Status Badge --}}
+                            <td class="text-center">
+                                @if ($item->status === 'menunggu_konfirmasi')
+                                <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill px-3">
+                                    <i class="bi bi-hourglass-split me-1"></i> Menunggu
+                                </span>
+                                @elseif ($item->status === 'dipinjam')
+                                <span
+                                    class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3">
+                                    Dipinjam
+                                </span>
+                                @elseif ($item->status === 'dikembalikan')
+                                <span
+                                    class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
+                                    Selesai
+                                </span>
+                                @elseif ($item->status === 'ditolak')
+                                <span
+                                    class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
+                                    Ditolak
+                                </span>
+                                @else
+                                <span class="badge bg-dark text-white rounded-pill px-3">Hilang</span>
+                                @endif
+                            </td>
+
+                            {{-- 5. Denda --}}
                             <td class="text-end">
-                                @if ($t->denda > 0)
-                                    <span class="fw-bold text-danger">
-                                        Rp {{ number_format($t->denda) }}
-                                    </span>
+                                @if ($item->denda > 0)
+                                <span class="fw-bold text-danger">Rp {{ number_format($item->denda) }}</span>
                                 @else
-                                    <span class="text-muted">-</span>
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
 
+                            {{-- 6. Tombol Aksi (LOGIKA UTAMA DIPERBAIKI DISINI) --}}
                             <td class="text-center">
-                                @if ($t->status === 'dipinjam')
+                                <div class="d-flex justify-content-center gap-1">
 
-                                    <form action="/admin/transaksi/{{ $t->id }}/kembali"
-                                          method="POST"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Yakin buku sudah dikembalikan?')">
+                                    {{-- KONDISI 1: Jika Status MENUNGGU --}}
+                                    @if ($item->status === 'menunggu_konfirmasi')
+                                    <form action="/admin/transaksi/{{ $item->id }}/setujui" method="POST">
                                         @csrf
-                                        <button class="btn btn-sm btn-success px-3">
-                                            <i class="bi bi-check-lg me-1"></i> Kembali
+                                        <button class="btn btn-sm btn-success px-3" title="Setujui">
+                                            <i class="bi bi-check-lg"></i> Terima
                                         </button>
                                     </form>
 
-                                    <form action="/admin/transaksi/{{ $t->id }}/hilang"
-                                          method="POST"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Tandai buku sebagai hilang? Denda Rp45.000')">
+                                    <form action="/admin/transaksi/{{ $item->id }}/tolak" method="POST"
+                                        onsubmit="return confirm('Tolak permintaan peminjaman ini?')">
                                         @csrf
-                                        <button class="btn btn-sm btn-danger px-3">
-                                            <i class="bi bi-x-circle me-1"></i> Hilang
+                                        <button class="btn btn-sm btn-outline-danger" title="Tolak">
+                                            <i class="bi bi-x-lg"></i>
                                         </button>
                                     </form>
 
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
+                                    {{-- KONDISI 2: Jika Status DIPINJAM --}}
+                                    @elseif ($item->status === 'dipinjam')
+                                    <form action="/admin/transaksi/{{ $item->id }}/kembali" method="POST"
+                                        onsubmit="return confirm('Yakin buku sudah dikembalikan?')">
+                                        @csrf
+                                        <button class="btn btn-sm btn-primary px-3" title="Proses Pengembalian">
+                                            <i class="bi bi-arrow-return-left me-1"></i> Diembalikan
+                                        </button>
+                                    </form>
+
+                                    <form action="/admin/transaksi/{{ $item->id }}/hilang" method="POST"
+                                        onsubmit="return confirm('Tandai buku sebagai hilang? Denda akan diterapkan.')">
+                                        @csrf
+                                        <button class="btn btn-sm btn-outline-danger" title="Laporkan Hilang">
+                                            <i class="bi bi-exclamation-circle"></i>
+                                        </button>
+                                    </form>
+
+                                    {{-- KONDISI 3: Status Lainnya (Arsip) --}}
+                                    @else
+                                    <span class="text-muted small">
+                                        <i class="bi bi-archive me-1"></i> Arsip
+                                    </span>
+                                    @endif
+
+                                </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                Tidak ada transaksi
+                            <td colspan="6" class="text-center py-5">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="bi bi-inbox fs-1 text-muted opacity-50"></i>
+                                    <p class="text-muted mt-2">Belum ada data transaksi.</p>
+                                </div>
                             </td>
                         </tr>
                         @endforelse
@@ -122,12 +175,10 @@
 
         </div>
     </div>
-
 </div>
 
 @push('styles')
-<link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
     .icon-shape {
         width: 48px;
@@ -136,12 +187,21 @@
         align-items: center;
         justify-content: center;
     }
+
     .table thead th {
         font-size: .75rem;
         letter-spacing: .05em;
+        font-weight: 600;
+        color: #6c757d;
     }
+
+    /* Mencegah tombol turun ke bawah (wrap) */
+    td div.d-flex {
+        white-space: nowrap;
+    }
+
     .btn {
-        border-radius: 8px;
+        border-radius: 6px;
     }
 </style>
 @endpush
