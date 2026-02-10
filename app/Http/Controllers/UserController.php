@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Buku;
+use App\Models\Transaksi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {

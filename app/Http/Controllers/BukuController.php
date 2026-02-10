@@ -13,13 +13,13 @@ class BukuController extends Controller
         $daftar_penerbit = Buku::distinct()->pluck('penerbit');
 
         $buku = Buku::query()
-            ->when($request->search, function($q, $search) {
+            ->when($request->search, function ($q, $search) {
                 $q->where('judul', 'like', "%{$search}%");
             })
-            ->when($request->penulis, function($q, $penulis) {
+            ->when($request->penulis, function ($q, $penulis) {
                 $q->where('penulis', $penulis);
             })
-            ->when($request->penerbit, function($q, $penerbit) {
+            ->when($request->penerbit, function ($q, $penerbit) {
                 $q->where('penerbit', $penerbit);
             })
             ->latest()
@@ -40,7 +40,7 @@ class BukuController extends Controller
             'penulis' => 'required',
             'penerbit' => 'required',
             'tahun' => 'required|numeric',
-            'stok' => 'required|numeric'
+            'stok' => 'required|numeric',
         ]);
 
         Buku::create($request->all());
@@ -49,10 +49,11 @@ class BukuController extends Controller
     }
 
     public function edit($id)
-{
-    $buku = Buku::findOrFail($id);
-    return view('buku.edit', compact('buku'));
-}
+    {
+        $buku = Buku::findOrFail($id);
+
+        return view('buku.edit', compact('buku'));
+    }
 
     public function update(Request $request, $id)
     {
@@ -77,5 +78,4 @@ class BukuController extends Controller
 
         return redirect('/buku')->with('success', 'Buku berhasil dihapus');
     }
-
 }

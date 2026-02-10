@@ -47,7 +47,7 @@ Route::get('/pinjam/{id}', [TransaksiController::class, 'pinjam'])
 Route::post('/kembali/{id}', [TransaksiController::class, 'kembali'])
     ->middleware('auth');
 
-Route::get('/riwayat', [TransaksiController::class, 'riwayat'])
+Route::get('/riwayat', [UserController::class, 'riwayat'])
     ->middleware('auth');
 
 // Route::post('/hilang/{id}', [TransaksiController::class, 'hilang']);
