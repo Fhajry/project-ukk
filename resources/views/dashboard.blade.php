@@ -121,7 +121,7 @@
         @else
         {{-- USER MENU --}}
         <div class="col-md-6">
-            <a href="/user/buku" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
+            <a href="{{ route('home.buku') }}" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-start">
                         <div class="bg-info text-white rounded-3 p-3 me-3">
@@ -136,7 +136,7 @@
             </a>
         </div>
         <div class="col-md-6">
-            <a href="/riwayat" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
+            <a href="{{ route('home.riwayat') }}" class="card border-0 shadow-sm text-decoration-none h-100 hover-card">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-start">
                         <div class="bg-warning text-white rounded-3 p-3 me-3">

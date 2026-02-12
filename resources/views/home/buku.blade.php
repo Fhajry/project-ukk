@@ -10,7 +10,7 @@
     .book-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: none;
-        border-radius: 15px;
+        border-radius: 12px;
         overflow: hidden;
         background: #fff;
     }
@@ -20,9 +20,21 @@
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
     }
 
+    /* PENTING: Style untuk Gambar Buku */
+    .book-cover-img {
+        height: 250px;
+        /* Tinggi tetap agar grid rapi */
+        width: 100%;
+        object-fit: cover;
+        /* Memastikan gambar tidak gepeng/tertarik */
+        object-position: center;
+    }
+
     /* Placeholder Cover jika tidak ada gambar */
     .book-cover-placeholder {
-        height: 160px;
+        height: 250px;
+        /* Tinggi disamakan dengan gambar */
+        width: 100%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
@@ -33,10 +45,11 @@
 
     .book-badge {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 10px;
+        right: 10px;
         font-size: 0.75rem;
-        backdrop-filter: blur(5px);
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     .card-title {
@@ -44,7 +57,6 @@
         font-weight: 700;
         line-height: 1.4;
         height: 3rem;
-        /* Membatasi tinggi judul 2 baris */
         overflow: hidden;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -75,7 +87,7 @@
 
         <div class="col-lg-10 mx-auto">
             <div class="search-container">
-                <form action="/buku" method="GET" class="row g-3">
+                <form action="{{ route('home.buku') }}" method="GET" class="row g-3">
                     <div class="col-md-5">
                         <div class="input-group">
                             <span class="input-group-text bg-white border-end-0 text-muted ps-3"><i
@@ -87,7 +99,7 @@
                     <div class="col-md-3">
                         <select name="penulis" class="form-select py-2">
                             <option value="">Semua Penulis</option>
-                            @foreach($daftar_penulis as $p)
+                            @foreach($daftar_penulis ?? [] as $p)
                             <option value="{{ $p }}" {{ request('penulis')==$p ? 'selected' : '' }}>{{ $p }}</option>
                             @endforeach
                         </select>
@@ -95,7 +107,7 @@
                     <div class="col-md-3">
                         <select name="penerbit" class="form-select py-2">
                             <option value="">Semua Penerbit</option>
-                            @foreach($daftar_penerbit as $p)
+                            @foreach($daftar_penerbit ?? [] as $p)
                             <option value="{{ $p }}" {{ request('penerbit')==$p ? 'selected' : '' }}>{{ $p }}</option>
                             @endforeach
                         </select>
@@ -108,7 +120,7 @@
         </div>
     </div>
 
-    {{-- FLASH MESSAGE (Standard Laravel) --}}
+    {{-- FLASH MESSAGE --}}
     @if (session('success'))
     <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
         <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
@@ -124,48 +136,68 @@
 
                 {{-- Status Badge (Stok) --}}
                 @if($item->stok > 0)
-                <span class="badge bg-success bg-opacity-75 book-badge rounded-pill shadow-sm">
+                <span class="badge bg-success book-badge rounded-pill">
                     Tersedia: {{ $item->stok }}
                 </span>
                 @else
-                <span class="badge bg-danger bg-opacity-75 book-badge rounded-pill shadow-sm">
+                <span class="badge bg-danger book-badge rounded-pill">
                     Stok Habis
                 </span>
                 @endif
 
-                {{-- Cover Placeholder (Karena di DB tidak ada kolom gambar, pakai icon) --}}
-                <div class="book-cover-placeholder">
+                {{-- LOGIK GAMBAR BUKU --}}
+                @if($item->gambar)
+                {{-- Jika ada gambar di database, tampilkan gambar --}}
+                <img src="{{ asset('storage/' . $item->gambar) }}" class="card-img-top book-cover-img"
+                    alt="{{ $item->judul }}">
+                @else
+                {{-- Jika tidak ada gambar, tampilkan placeholder warna --}}
+                <div class="book-cover-placeholder card-img-top">
                     <i class="bi bi-journal-text"></i>
                 </div>
+                @endif
 
                 <div class="card-body d-flex flex-column">
-                    <div class="mb-2">
-                        <small class="text-primary fw-bold text-uppercase" style="font-size: 0.7rem;">{{ $item->penerbit
-                            }}</small>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <small class="text-primary fw-bold text-uppercase" style="font-size: 0.7rem;">
+                            {{ $item->kategori->nama_kategori ?? 'Umum' }}
+                        </small>
                     </div>
-                    <h5 class="card-title text-dark mb-1" title="{{ $item->judul }}">{{ $item->judul }}</h5>
-                    <p class="meta-text mb-3"><i class="bi bi-pen me-1"></i> {{ $item->penulis }}</p>
+
+                    <h5 class="card-title text-dark mb-1" title="{{ $item->judul }}">
+                        {{ $item->judul }}
+                    </h5>
+
+                    <p class="meta-text mb-3">
+                        <i class="bi bi-pen me-1"></i> {{ $item->penulis }}
+                    </p>
 
                     <div class="mt-auto pt-3 border-top">
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">{{ $item->tahun }}</small>
 
+                            {{-- Cek Role User --}}
+                            @auth
                             @if (auth()->user()->role === 'user')
+                            <a href="{{ route('home.show', $item->id) }}" class="btn btn-sm btn-outline-info">Detail</a>
                             @if ($item->stok > 0)
-                            {{-- Tombol Pinjam dengan SweetAlert --}}
                             <button onclick="konfirmasiPinjam('{{ $item->id }}', '{{ $item->judul }}')"
                                 class="btn btn-sm btn-primary px-3 rounded-pill fw-bold">
                                 Pinjam
                             </button>
+
                             @else
                             <button class="btn btn-sm btn-light text-muted border px-3 rounded-pill"
                                 disabled>Habis</button>
                             @endif
                             @else
                             {{-- Tombol Admin (Edit) --}}
-                            <a href="/buku/{{ $item->id }}/edit"
-                                class="btn btn-sm btn-outline-dark rounded-pill">Kelola</a>
+                            <a href="{{ route('buku.edit', $item->id) }}"
+                                class="btn btn-sm btn-outline-dark rounded-pill">
+                                <i class="bi bi-gear"></i> Kelola
+                            </a>
                             @endif
+                            @endauth
                         </div>
                     </div>
                 </div>
@@ -178,12 +210,12 @@
             </div>
             <h5 class="text-muted">Buku tidak ditemukan</h5>
             <p class="small text-muted mb-3">Coba kata kunci lain atau reset filter.</p>
-            <a href="/buku" class="btn btn-outline-primary rounded-pill px-4">Reset Filter</a>
+            <a href="{{ route('buku.index') }}" class="btn btn-outline-primary rounded-pill px-4">Reset Filter</a>
         </div>
         @endforelse
     </div>
 
-    {{-- Pagination (Jika pakai paginate) --}}
+    {{-- Pagination --}}
     <div class="d-flex justify-content-center mt-5">
         {{-- {{ $buku->links() }} --}}
     </div>
@@ -195,16 +227,18 @@
         Swal.fire({
             title: 'Konfirmasi Peminjaman',
             text: "Apakah Anda yakin ingin meminjam buku \"" + judul + "\"?",
-            icon: 'question',
+            imageUrl: 'https://cdn-icons-png.flaticon.com/512/2232/2232688.png', // Icon buku
+            imageWidth: 80,
+            imageHeight: 80,
             showCancelButton: true,
-            confirmButtonColor: '#0d6efd', // Warna Bootstrap Primary
-            cancelButtonColor: '#6c757d', // Warna Bootstrap Secondary
+            confirmButtonColor: '#0d6efd',
+            cancelButtonColor: '#6c757d',
             confirmButtonText: 'Ya, Pinjam!',
             cancelButtonText: 'Batal',
             reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
-                // Arahkan ke route peminjaman jika user klik Ya
+                // Pastikan route pinjam Anda sesuai
                 window.location.href = "/pinjam/" + id;
             }
         });

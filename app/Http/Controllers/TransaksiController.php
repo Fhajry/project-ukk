@@ -42,7 +42,7 @@ class TransaksiController extends Controller
         // Kurangi stok (Booking buku agar tidak diambil orang lain)
         $buku->decrement('stok');
 
-        return back()->with('success', 'Permintaan peminjaman berhasil dikirim. Menunggu konfirmasi admin.');
+        return redirect()->route('home.buku')->with('success', 'Permintaan peminjaman berhasil dikirim. Menunggu konfirmasi admin.');
     }
 
     // Fungsi untuk Admin Menyetujui

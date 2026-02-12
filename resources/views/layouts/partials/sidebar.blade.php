@@ -16,14 +16,14 @@
 
         @if (auth()->user()->role === 'user')
         <li class="nav-item">
-            <a href="/riwayat" class="nav-link px-3 py-2 rounded
-            {{ request()->is('riwayat') ? 'active' : '' }}">
+            <a href="{{ route('home.riwayat') }}" class="nav-link px-3 py-2 rounded
+            {{ request()->is('home/riwayat') ? 'active' : '' }}">
                 Riwayat
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('user.buku') }}" class="nav-link px-3 py-2 rounded
-            {{ request()->is('user/buku') ? 'active' : '' }}">
+            <a href="{{ route('home.buku') }}" class="nav-link px-3 py-2 rounded
+            {{ request()->is('home/buku') ? 'active' : '' }}">
                 Data Buku
             </a>
         </li>
@@ -51,9 +51,15 @@
                 Data Buku
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('kategori.index') }}" class="nav-link">
+                Kategori Buku
+            </a>
+        </li>
+
 
         <li class="nav-item">
-            <a href="/admin/users" class="nav-link">
+            <a href="{{ route('users.index') }}" class="nav-link">
                 User
             </a>
         </li>

@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KategoriBukuController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\UserController;
@@ -47,14 +49,17 @@ Route::get('/pinjam/{id}', [TransaksiController::class, 'pinjam'])
 Route::post('/kembali/{id}', [TransaksiController::class, 'kembali'])
     ->middleware('auth');
 
-Route::get('/riwayat', [UserController::class, 'riwayat'])
-    ->middleware('auth');
+// Route::get('/riwayat', [Controller::class, 'riwayat'])
+//     ->middleware('auth');
 
 // Route::post('/hilang/{id}', [TransaksiController::class, 'hilang']);
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/admin/users', [TransaksiController::class, 'adminUsers']);
+    Route::resource('users', UserController::class);
+    Route::resource('kategori', KategoriBukuController::class);
+    Route::resource('buku', BukuController::class);
+
     Route::get('/admin/transaksi', [TransaksiController::class, 'adminTransaksi']);
     // Route::get('/admin/transaksi', [TransaksiController::class, 'adminIndex']);
 
@@ -62,10 +67,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/transaksi/{id}/hilang', [TransaksiController::class, 'hilang']);
     Route::post('/admin/transaksi/{id}/setujui', [TransaksiController::class, 'setujuiPeminjaman']);
     Route::post('/admin/transaksi/{id}/tolak', [TransaksiController::class, 'tolakPeminjaman']);
+    Route::get('/home/buku', [HomeController::class, 'index'])->name('home.buku');
+    Route::get('/home/riwayat', [HomeController::class, 'riwayat'])->name('home.riwayat');
+    Route::get('/home/show/{id}', [HomeController::class, 'show'])->name('home.show');
 
 });
-
-Route::get('/user/buku', [UserController::class, 'index'])->name('user.buku');
 
 Route::middleware(['auth'])->group(function () {
 
