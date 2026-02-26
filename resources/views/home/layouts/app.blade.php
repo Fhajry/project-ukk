@@ -176,11 +176,7 @@
                             @endif
 
                             {{-- Menu Profil & Logout --}}
-                            <li>
-                                <a class="dropdown-item py-2 fw-medium" href="/profile">
-                                    <i class="bi bi-person-gear me-2 text-secondary"></i>Pengaturan Profil
-                                </a>
-                            </li>
+
                             <li>
                                 <hr class="dropdown-divider">
                             </li>

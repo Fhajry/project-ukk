@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
-
-
 use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +34,13 @@ class PengaturanController extends Controller
             abort(403);
         }
 
+        // 1. Bersihkan titik format ribuan dari input sebelum divalidasi
+        $request->merge([
+            'denda_harian' => str_replace('.', '', $request->denda_harian),
+            'denda_hilang' => str_replace('.', '', $request->denda_hilang),
+        ]);
+
+        // 2. Sekarang data sudah murni angka, aman untuk divalidasi
         $request->validate([
             'denda_harian' => 'required|integer|min:0',
             'denda_hilang' => 'required|integer|min:0',

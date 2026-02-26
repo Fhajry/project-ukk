@@ -38,13 +38,14 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-medium">Denda Keterlambatan Harian (Rp)</label>
-                        {{-- Menggunakan type="text" agar bisa menampilkan titik format ribuan --}}
+                        {{-- Ubah menjadi type="text" --}}
                         <input type="text" name="denda_harian" class="form-control"
                             value="{{ old('denda_harian', number_format($pengaturan->denda_harian, 0, '', '.')) }}">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-medium">Denda Buku Hilang (Rp)</label>
+                        {{-- Ubah menjadi type="text" --}}
                         <input type="text" name="denda_hilang" class="form-control"
                             value="{{ old('denda_hilang', number_format($pengaturan->denda_hilang, 0, '', '.')) }}">
                     </div>

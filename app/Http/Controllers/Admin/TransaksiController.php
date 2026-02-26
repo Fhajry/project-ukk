@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+
+use App\Exports\TransaksiExport;
 use App\Http\Controllers\Controller;
-
-
 use App\Models\Buku;
 use App\Models\Pengaturan;
 use App\Models\Transaksi;
@@ -12,6 +12,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request; 
 
 class TransaksiController extends Controller
 {
@@ -162,26 +164,46 @@ class TransaksiController extends Controller
         return back()->with('success', 'Buku ditandai hilang. Denda Rp '.number_format($pengaturan->denda_hilang, 0, ',', '.'));
     }
 
-    public function adminUsers()
+
+
+    public function adminTransaksi(Request $request)
     {
         if (Auth::user()->role !== 'admin') {
             abort(403);
         }
 
-        $users = User::all();
 
-        return view('admin.users', compact('users'));
-    }
+        // Mulai Query dengan relasi
+        $query = Transaksi::with(['user', 'buku']);
 
-    public function adminTransaksi()
-    {
-        if (Auth::user()->role !== 'admin') {
-            abort(403);
+        // 1. Filter Pencarian (Nama User ATAU Judul Buku)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                // Cari di relasi tabel users
+                $q->whereHas('user', function($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%");
+                })
+                // ATAU Cari di relasi tabel bukus
+                ->orWhereHas('buku', function($bukuQuery) use ($search) {
+                    $bukuQuery->where('judul', 'like', "%{$search}%");
+                });
+            });
         }
 
-        $transaksis = Transaksi::with(['user', 'buku'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // 2. Filter Berdasarkan Tanggal Pinjam
+        if ($request->filled('tgl_pinjam')) {
+            $query->whereDate('tanggal_pinjam', $request->tgl_pinjam);
+        }
+
+        // 3. Filter Berdasarkan Tanggal Kembali
+        if ($request->filled('tgl_kembali')) {
+            $query->whereDate('tanggal_kembali', $request->tgl_kembali);
+        }
+
+        // Eksekusi Query (Gunakan paginate agar lebih rapi jika datanya banyak)
+        $transaksis = $query->latest()->paginate(15);
+        // Jika tidak mau pakai pagination, ganti paginate(15) menjadi get()
 
         return view('admin.transaksi', compact('transaksis'));
     }
@@ -210,5 +232,17 @@ class TransaksiController extends Controller
         ]);
 
         return $pdf->download('laporan-'.$user->name.'.pdf');
+    }
+
+    public function exportExcel()
+    {
+        // 1. Ambil semua data transaksi beserta relasi buku dan user
+        $transaksis = Transaksi::with(['buku', 'user'])->latest()->get();
+
+        // 2. Ambil data admin yang sedang login (untuk dicetak di laporan)
+        $user = Auth::user();
+
+        // 3. Proses download file Excel
+        return Excel::download(new TransaksiExport($transaksis, $user), 'Laporan_Transaksi_Perpustakaan.xlsx');
     }
 }

@@ -63,7 +63,7 @@ Route::middleware('auth')->group(function () {
 
     // --- Akses Member (User) ---
     Route::get('/home/riwayat', [HomeController::class, 'riwayat'])->name('home.riwayat');
-    Route::get('/pinjam/{id}', [TransaksiController::class, 'pinjam'])->name('transaksi.pinjam');
+    Route::post('/pinjam/{id}', [TransaksiController::class, 'pinjam'])->name('transaksi.pinjam');
     Route::post('/kembali/{id}', [TransaksiController::class, 'kembali'])->name('transaksi.kembali');
 
     // Pengaturan Profil
@@ -97,5 +97,7 @@ Route::middleware('auth')->group(function () {
         // Laporan
         Route::get('/admin/laporan', [LaporanController::class, 'index'])->name('laporan.index');
         Route::get('/admin/laporan/user/{user}', [LaporanController::class, 'userPdf'])->name('laporan.userPdf');
+        Route::get('/laporan/excel', [TransaksiController::class, 'exportExcel'])->name('laporan.excel');
+        Route::get('/admin/transaksi/export', [TransaksiController::class, 'exportExcel'])->name('admin.transaksi.export');
     });
 });

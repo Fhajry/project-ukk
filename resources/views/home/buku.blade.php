@@ -107,8 +107,9 @@
                     <div class="d-grid">
                         @auth
                         @if($item->stok > 0)
-                        <button onclick="konfirmasiPinjam('{{ $item->id }}', '{{ $item->judul }}')"
-                            class="btn btn-primary btn-sm rounded-pill shadow-sm">
+                        <button
+                            onclick="konfirmasiPinjam('{{ route('transaksi.pinjam', $item->id) }}', '{{ addslashes($item->judul) }}')"
+                            class="btn btn-primary btn-sm rounded-pill shadow-sm w-100">
                             Pinjam Sekarang
                         </button>
                         @else
@@ -136,7 +137,7 @@
 </div>
 
 <script>
-    function konfirmasiPinjam(id, judul) {
+    function konfirmasiPinjam(actionUrl, judul) {
         Swal.fire({
             title: 'Pinjam Buku?',
             text: "Apakah Anda ingin meminjam '" + judul + "'?",
@@ -148,7 +149,21 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = "/admin/pinjam/" + id; // Sesuaikan route peminjaman Anda
+                // 1. Buat form bayangan secara dinamis
+                let form = document.createElement('form');
+                form.action = actionUrl;
+                form.method = 'POST'; // Memaksa metode POST agar cocok dengan web.php
+
+                // 2. Tambahkan token keamanan bawaan Laravel (Wajib untuk POST)
+                let csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // 3. Masukkan form ke dalam halaman dan tekan tombol submit otomatis
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     }
