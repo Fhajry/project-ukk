@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,8 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
         :root {
@@ -29,32 +31,47 @@
         }
 
         /* LAYOUT */
-        .layout { min-height: 100vh; display: flex; flex-direction: column; }
-        .main { flex: 1; display: flex; }
+        .layout {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+        }
 
         /* NAVBAR */
         .navbar {
             background: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(10px); /* Efek Kaca */
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            /* Efek Kaca */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             padding: 1rem 2rem;
             z-index: 1050;
         }
 
-        .navbar-brand { font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+        }
 
         /* SIDEBAR: Putih Bersih */
         #sidebar {
             width: 280px;
             background: var(--sidebar-bg);
-            border-right: 1px solid rgba(0,0,0,0.05);
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             z-index: 1040;
         }
 
-        #sidebar.collapsed { margin-left: -280px; }
+        #sidebar.collapsed {
+            margin-left: -280px;
+        }
 
         #sidebar .sidebar-heading {
             padding: 2.5rem 2rem 1rem;
@@ -76,7 +93,10 @@
             transition: 0.2s;
         }
 
-        #sidebar .nav-link i { font-size: 1.25rem; margin-right: 12px; }
+        #sidebar .nav-link i {
+            font-size: 1.25rem;
+            margin-right: 12px;
+        }
 
         #sidebar .nav-link:hover {
             color: var(--accent);
@@ -105,7 +125,9 @@
             transition: transform 0.3s ease;
         }
 
-        .card:hover { transform: translateY(-5px); }
+        .card:hover {
+            transform: translateY(-5px);
+        }
 
         /* BUTTONS */
         .btn-primary {
@@ -123,46 +145,78 @@
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
         }
 
-        /* FOOTER */
-        footer { padding: 2rem; color: #94a3b8; font-size: 0.85rem; }
+        /* TABLE BUKU */
+        <>
 
-        /* Animasi masuk */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Styling Tetap Sama */
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
         }
-        #content { animation: fadeIn 0.5s ease-out; }
+
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .search-container {
+            background: #fcfcfc;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .img-book-cover {
+            width: 50px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+    /* FOOTER */
+    footer { padding: 2rem; color: #94a3b8; font-size: 0.85rem; }
+
+    /* Animasi masuk */
+    @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+    }
+    #content { animation: fadeIn 0.5s ease-out; }
     </style>
 </head>
+
 <body>
 
-<div class="layout">
-    @include('layouts.partials.navbar')
+    <div class="layout">
+        @include('admin.layouts.partials.navbar')
 
-    <div class="main">
-        @auth
-        <aside id="sidebar">
-            <div class="sidebar-heading">Main Menu</div>
-            @include('layouts.partials.sidebar')
-        </aside>
-        @endauth
+        <div class="main">
+            @auth
+            <aside id="sidebar">
+                <div class="sidebar-heading">Main Menu</div>
+                @include('admin.layouts.partials.sidebar')
+            </aside>
+            @endauth
 
-        <main id="content">
-            @yield('content')
-        </main>
+            <main id="content">
+                @yield('content')
+            </main>
+        </div>
+
+        <footer class="text-center">
+            &copy; {{ date('Y') }} <span style="color:var(--text-dark); font-weight:600;">Perpustakaan</span>. Digital
+            Experience.
+        </footer>
     </div>
 
-    <footer class="text-center">
-        &copy; {{ date('Y') }} <span style="color:var(--text-dark); font-weight:600;">Perpustakaan</span>. Digital Experience.
-    </footer>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function toggleSidebar() {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('collapsed');
     }
-</script>
+    </script>
 
 </body>
+
 </html>

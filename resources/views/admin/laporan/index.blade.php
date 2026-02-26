@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('admin.layouts.app')
 
 @section('content')
 <style>
@@ -7,9 +7,21 @@
         transition: all 0.2s ease;
         transform: scale(1.002);
     }
-    .card { border-radius: 12px; overflow: hidden; }
-    .btn { border-radius: 8px; font-weight: 500; }
-    .badge { padding: 0.5em 0.8em; font-weight: 500; }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .badge {
+        padding: 0.5em 0.8em;
+        font-weight: 500;
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -57,7 +69,7 @@
 
                             <td class="text-center">
                                 <a href="/admin/laporan/user/{{ $user->id }}"
-                                   class="btn btn-sm btn-primary px-4 shadow-sm">
+                                    class="btn btn-sm btn-primary px-4 shadow-sm">
                                     <i class="bi bi-file-earmark-pdf me-1"></i>
                                     Cetak PDF
                                 </a>

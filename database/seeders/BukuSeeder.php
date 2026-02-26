@@ -4,102 +4,102 @@ namespace Database\Seeders;
 
 use App\Models\Buku;
 use App\Models\KategoriBuku;
+use App\Models\Penerbit;
+use App\Models\Penulis;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Http; // Ganti jadi Kategori jika modelmu namanya Kategori.php
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BukuSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        // 1. BUAT KATEGORI DULU (Simpan ke variabel agar bisa diambil ID-nya)
-        $catNovel = KategoriBuku::create(['nama_kategori' => 'Novel']);
-        $catTekno = KategoriBuku::create(['nama_kategori' => 'Teknologi']);
-        $catBisnis = KategoriBuku::create(['nama_kategori' => 'Bisnis & Ekonomi']);
-        $catSelf = KategoriBuku::create(['nama_kategori' => 'Pengembangan Diri']);
-        $catKomik = KategoriBuku::create(['nama_kategori' => 'Komik']);
+        // Agar script tidak timeout saat mendownload 100 gambar
+        set_time_limit(0);
 
-        // 2. BUAT DATA BUKU DUMMY
-        // Kita biarkan 'gambar' => null agar CSS Placeholder yang kita buat sebelumnya muncul.
+        $this->command->info('Mulai menarik data buku asli dan mendownload gambar... (Ini butuh waktu 1-3 menit)');
 
-        $bukus = [
-            [
-                'judul' => 'Laskar Pelangi',
-                'penulis' => 'Andrea Hirata',
-                'penerbit' => 'Bentang Pustaka',
-                'tahun' => '2005',
-                'stok' => 12,
-                'kategori_id' => $catNovel->id,
-                'sinopsis' => 'Kisah perjuangan sepuluh anak Belitong yang bersekolah di sebuah SD Muhammadiyah yang hampir roboh. Penuh inspirasi, tawa, dan tangis.',
-            ],
-            [
-                'judul' => 'Atomic Habits',
-                'penulis' => 'James Clear',
-                'penerbit' => 'Gramedia Pustaka Utama',
-                'tahun' => '2019',
-                'stok' => 25,
-                'kategori_id' => $catSelf->id,
-                'sinopsis' => 'Perubahan kecil yang memberikan hasil luar biasa. Buku ini mengajarkan cara membangun kebiasaan baik dan membuang kebiasaan buruk.',
-            ],
-            [
-                'judul' => 'Clean Code',
-                'penulis' => 'Robert C. Martin',
-                'penerbit' => 'Prentice Hall',
-                'tahun' => '2008',
-                'stok' => 5,
-                'kategori_id' => $catTekno->id,
-                'sinopsis' => 'Panduan wajib bagi para programmer untuk menulis kode yang bersih, mudah dibaca, dan mudah dipelihara.',
-            ],
-            [
-                'judul' => 'Filosofi Teras',
-                'penulis' => 'Henry Manampiring',
-                'penerbit' => 'Kompas',
-                'tahun' => '2018',
-                'stok' => 0, // Stok habis untuk tes label merah
-                'kategori_id' => $catSelf->id,
-                'sinopsis' => 'Penjelasan filsafat Stoisisme yang relevan dengan kehidupan masa kini. Mengajarkan cara hidup tenang di tengah kekhawatiran.',
-            ],
-            [
-                'judul' => 'Naruto Vol. 72',
-                'penulis' => 'Masashi Kishimoto',
-                'penerbit' => 'Elex Media Komputindo',
-                'tahun' => '2015',
-                'stok' => 50,
-                'kategori_id' => $catKomik->id,
-                'sinopsis' => 'Volume terakhir dari kisah epik Naruto Uzumaki. Pertarungan akhir melawan Kaguya dan penentuan nasib dunia ninja.',
-            ],
-            [
-                'judul' => 'Rich Dad Poor Dad',
-                'penulis' => 'Robert T. Kiyosaki',
-                'penerbit' => 'Gramedia Pustaka Utama',
-                'tahun' => '2017',
-                'stok' => 8,
-                'kategori_id' => $catBisnis->id,
-                'sinopsis' => 'Buku pengelolaan keuangan pribadi nomor 1 sepanjang masa. Mengubah pola pikir tentang uang dan investasi.',
-            ],
-            [
-                'judul' => 'Bumi',
-                'penulis' => 'Tere Liye',
-                'penerbit' => 'Gramedia Pustaka Utama',
-                'tahun' => '2014',
-                'stok' => 15,
-                'kategori_id' => $catNovel->id,
-                'sinopsis' => 'Petualangan Raib, Seli, dan Ali ke dunia paralel. Awal dari serial "Bumi" yang sangat populer di kalangan remaja.',
-            ],
-            [
-                'judul' => 'Laravel: Up & Running',
-                'penulis' => 'Matt Stauffer',
-                'penerbit' => 'O Reilly Media',
-                'tahun' => '2019',
-                'stok' => 3,
-                'kategori_id' => $catTekno->id,
-                'sinopsis' => 'Panduan komprehensif untuk menguasai framework PHP terpopuler, Laravel. Cocok untuk pemula hingga mahir.',
-            ],
-        ];
+        // Kata kunci pencarian agar genre bukunya bervariasi
+        $queries = ['pemrograman', 'novel fiksi', 'sejarah indonesia', 'bisnis digital', 'psikologi'];
+        $count = 0;
 
-        foreach ($bukus as $buku) {
-            Buku::create($buku);
+        // Pastikan folder buku ada
+        if (! Storage::exists('public/buku')) {
+            Storage::makeDirectory('public/buku');
         }
+
+        foreach ($queries as $query) {
+            // Mengambil 20 buku per kata kunci dari Google Books API
+            $response = Http::withoutVerifying()->get('https://www.googleapis.com/books/v1/volumes', [
+                'q' => $query,
+                'maxResults' => 20,
+                'langRestrict' => 'id',
+            ]);
+
+            if ($response->successful()) {
+                $items = $response->json('items') ?? [];
+
+                foreach ($items as $item) {
+                    if ($count >= 100) {
+                        break;
+                    } // Berhenti jika sudah 100 buku
+
+                    $volumeInfo = $item['volumeInfo'];
+
+                    // Lewati jika buku ini tidak punya judul atau tidak punya gambar sampul
+                    if (empty($volumeInfo['title']) || empty($volumeInfo['imageLinks']['thumbnail'])) {
+                        continue;
+                    }
+
+                    // 1. Simpan/Ambil Kategori
+                    $kategoriName = $volumeInfo['categories'][0] ?? ucfirst($query);
+                    $kategori = KategoriBuku::firstOrCreate(['nama_kategori' => substr($kategoriName, 0, 100)]);
+
+                    // 2. Simpan/Ambil Penulis
+                    $penulisName = $volumeInfo['authors'][0] ?? 'Anonim';
+                    $penulis = Penulis::firstOrCreate(['nama_penulis' => substr($penulisName, 0, 100)]);
+
+                    // 3. Simpan/Ambil Penerbit
+                    $penerbitName = $volumeInfo['publisher'] ?? 'Penerbit Independen';
+                    $penerbit = Penerbit::firstOrCreate(['nama_penerbit' => substr($penerbitName, 0, 100)]);
+
+                    // Cek apakah buku sudah ada agar tidak duplikat
+                    $judulBuku = substr($volumeInfo['title'], 0, 255);
+                    if (Buku::where('judul', $judulBuku)->exists()) {
+                        continue;
+                    }
+
+                    // 4. Download Foto Sampul (Cover)
+                    $imageUrl = $volumeInfo['imageLinks']['thumbnail'];
+                    $imageUrl = str_replace('http:', 'https:', $imageUrl); // Google API kadang pakai http
+                    $imageName = time().'_'.Str::slug(substr($judulBuku, 0, 30)).'.jpg';
+
+                    try {
+                        $imageContents = Http::withoutVerifying()->get($imageUrl)->body();
+                        Storage::put('public/buku/'.$imageName, $imageContents);
+                    } catch (\Exception $e) {
+                        $imageName = null; // Jika gagal download, biarkan kosong
+                    }
+
+                    // 5. Simpan ke Tabel Buku
+                    Buku::create([
+                        'judul' => $judulBuku,
+                        'penulis_id' => $penulis->id,
+                        'penerbit_id' => $penerbit->id,
+                        'kategori_id' => $kategori->id,
+                        'tahun' => isset($volumeInfo['publishedDate']) ? (int) substr($volumeInfo['publishedDate'], 0, 4) : rand(2010, 2024),
+                        'stok' => rand(5, 50),
+                        'gambar' => $imageName ? 'buku/'.$imageName : null,
+                        'sinopsis' => $volumeInfo['description'] ?? 'Tidak ada sinopsis untuk buku ini.',
+                    ]);
+
+                    $count++;
+                    $this->command->info("Tersimpan [{$count}/100]: {$judulBuku}");
+                }
+            }
+        }
+
+        $this->command->info("Selesai! {$count} Buku asli beserta foto covernya berhasil ditambahkan.");
     }
 }

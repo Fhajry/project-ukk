@@ -1,42 +1,105 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
-        body { font-family: sans-serif; }
-        table { width:100%; border-collapse: collapse; }
-        th, td { border:1px solid #000; padding:6px; }
+        body {
+            font-family: sans-serif;
+            font-size: 14px;
+            color: #333;
+        }
+
+        h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .info-user {
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
     </style>
 </head>
+
 <body>
 
-<h3>Laporan Peminjaman</h3>
-<p>
-    Nama: {{ $user->name }} <br>
-    Email: {{ $user->email }}
-</p>
+    <h3>Laporan Peminjaman Buku</h3>
 
-<table>
-    <thead>
-        <tr>
-            <th>Buku</th>
-            <th>Pinjam</th>
-            <th>Tempo</th>
-            <th>Status</th>
-            <th>Denda</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($transaksis as $t)
-        <tr>
-            <td>{{ $t->buku->judul }}</td>
-            <td>{{ $t->tanggal_pinjam }}</td>
-            <td>{{ $t->tanggal_jatuh_tempo }}</td>
-            <td>{{ $t->status }}</td>
-            <td>Rp {{ number_format($t->denda) }}</td>
-        </tr>
-        @endforeach
-    </tbody>
-</table>
+    <div class="info-user">
+        <strong>Nama &nbsp;:</strong> {{ $user->name }} <br>
+        <strong>Email &nbsp;:</strong> {{ $user->email }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Judul Buku</th>
+                <th class="text-center">Pinjam</th>
+                <th class="text-center">Tempo</th>
+                <th class="text-center">Kembali</th>
+                <th class="text-center">Status</th>
+                <th class="text-right">Denda</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($transaksis as $t)
+            <tr>
+                <td>{{ $t->buku->judul }}</td>
+
+                <td class="text-center">
+                    {{ $t->tanggal_pinjam ? \Carbon\Carbon::parse($t->tanggal_pinjam)->format('d-m-Y') : '-' }}
+                </td>
+
+                <td class="text-center">
+                    {{ $t->tanggal_jatuh_tempo ? \Carbon\Carbon::parse($t->tanggal_jatuh_tempo)->format('d-m-Y') : '-'
+                    }}
+                </td>
+
+                <td class="text-center">
+                    {{ $t->tanggal_kembali ? \Carbon\Carbon::parse($t->tanggal_kembali)->format('d-m-Y') : '-' }}
+                </td>
+
+                <td class="text-center">
+                    {{ ucfirst(str_replace('_', ' ', $t->status)) }}
+                </td>
+
+                <td class="text-right">
+                    Rp {{ number_format($t->denda, 0, ',', '.') }}
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="6" class="text-center">Belum ada riwayat transaksi.</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
 
 </body>
+
 </html>

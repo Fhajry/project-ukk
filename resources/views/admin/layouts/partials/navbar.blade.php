@@ -1,13 +1,11 @@
-<nav class="navbar shadow-sm"
-     style="background:#e9e9e9; border-bottom:1px solid #dcdcdc">
+<nav class="navbar shadow-sm" style="background:#e9e9e9; border-bottom:1px solid #dcdcdc">
     <div class="container-fluid">
 
         <div class="d-flex align-items-center gap-3">
 
             {{-- HAMBURGER --}}
             @auth
-            <button class="btn btn-sm btn-outline-secondary"
-                    onclick="toggleSidebar()">
+            <button class="btn btn-sm btn-outline-secondary" onclick="toggleSidebar()">
                 ☰
             </button>
             @endauth
@@ -28,7 +26,7 @@
                 {{ auth()->user()->role }}
             </span>
 
-            <a href="/logout" class="btn btn-sm btn-outline-danger">
+            <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger">
                 Logout
             </a>
 

@@ -1,5 +1,4 @@
-@extends('layouts.app')
-
+@extends('admin.layouts.app')
 @section('content')
 <div class="container-fluid py-4">
 
@@ -40,6 +39,7 @@
                             <th class="ps-3">Peminjam & Buku</th>
                             <th>Tgl Pinjam</th>
                             <th>Jatuh Tempo</th>
+                            <th>Tgl Kembali</th> {{-- ⬅️ TAMBAHAN KOLOM TGL KEMBALI --}}
                             <th class="text-center">Status</th>
                             <th class="text-end">Denda</th>
                             <th class="text-center" style="width: 220px;">Aksi</th>
@@ -75,7 +75,16 @@
                                 @endif
                             </td>
 
-                            {{-- 4. Status Badge --}}
+                            {{-- 4. Tgl Kembali (TAMBAHAN BARU) --}}
+                            <td>
+                                @if($item->tanggal_kembali)
+                                {{ \Carbon\Carbon::parse($item->tanggal_kembali)->format('d M Y') }}
+                                @else
+                                <span class="text-muted small fst-italic">-</span>
+                                @endif
+                            </td>
+
+                            {{-- 5. Status Badge --}}
                             <td class="text-center">
                                 @if ($item->status === 'menunggu_konfirmasi')
                                 <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill px-3">
@@ -89,7 +98,7 @@
                                 @elseif ($item->status === 'dikembalikan')
                                 <span
                                     class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
-                                    Selesai
+                                    Dikembalikan
                                 </span>
                                 @elseif ($item->status === 'ditolak')
                                 <span
@@ -101,16 +110,17 @@
                                 @endif
                             </td>
 
-                            {{-- 5. Denda --}}
+                            {{-- 6. Denda --}}
                             <td class="text-end">
                                 @if ($item->denda > 0)
-                                <span class="fw-bold text-danger">Rp {{ number_format($item->denda) }}</span>
+                                <span class="fw-bold text-danger">Rp {{ number_format($item->denda, 0, ',', '.')
+                                    }}</span>
                                 @else
                                 <span class="text-muted">-</span>
                                 @endif
                             </td>
 
-                            {{-- 6. Tombol Aksi (LOGIKA UTAMA DIPERBAIKI DISINI) --}}
+                            {{-- 7. Tombol Aksi --}}
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
 
@@ -137,7 +147,7 @@
                                         onsubmit="return confirm('Yakin buku sudah dikembalikan?')">
                                         @csrf
                                         <button class="btn btn-sm btn-primary px-3" title="Proses Pengembalian">
-                                            <i class="bi bi-arrow-return-left me-1"></i> Diembalikan
+                                            <i class="bi bi-arrow-return-left me-1"></i> Dikembalikan
                                         </button>
                                     </form>
 
@@ -161,7 +171,8 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5">
+                            {{-- ⬅️ UBAH COLSPAN MENJADI 7 KARENA ADA PENAMBAHAN KOLOM --}}
+                            <td colspan="7" class="text-center py-5">
                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                     <i class="bi bi-inbox fs-1 text-muted opacity-50"></i>
                                     <p class="text-muted mt-2">Belum ada data transaksi.</p>

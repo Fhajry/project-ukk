@@ -1,81 +1,101 @@
 <?php
 
+use App\Http\Controllers\Admin\BukuController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\KategoriBukuController;
+use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\PenerbitController;
+use App\Http\Controllers\Admin\PengaturanController;
+use App\Http\Controllers\Admin\PenulisController;
+use App\Http\Controllers\Admin\TransaksiController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BukuController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\KategoriBukuController;
-use App\Http\Controllers\LaporanController;
-use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
-Route::get('/', [DashboardController::class, 'index'])
-    ->middleware('auth');
+// Route untuk "mengakali" symlink yang error di Linux
+// Route::get('/storage/buku/{filename}', function ($filename) {
+//     $path = 'public/buku/' . $filename;
+
+//     // Cek apakah file benar-benar ada di folder storage/app/public/buku
+//     if (!Storage::exists($path)) {
+//         abort(404);
+//     }
+
+//     // Ambil file dan tipe mimenya (jpg/png)
+//     $file = Storage::get($path);
+//     $type = Storage::mimeType($path);
+
+//     // Tampilkan gambar langsung ke browser
+//     return Response::make($file, 200)->header("Content-Type", $type);
+// });
+/*
+|--------------------------------------------------------------------------
+| Public Routes (Bisa diakses tanpa login)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return redirect()->route('home.dashboard');
+});
+Route::get('/home', [HomeController::class, 'dashboard'])->name('home.dashboard');
+
+Route::get('/home/buku', [HomeController::class, 'buku'])->name('home.buku');
+Route::get('/home/detail/{id}', [HomeController::class, 'show'])->name('home.detail');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'prosesLogin']);
+    Route::get('/register', [AuthController::class, 'register'])->name('register');
+    Route::post('/register', [AuthController::class, 'prosesRegister']);
 });
 
-Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth');
-
-Route::get('/register', [AuthController::class, 'register']);
-Route::post('/register', [AuthController::class, 'prosesRegister']);
-
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware('auth');
-Route::get('/buku', [BukuController::class, 'index'])
-    ->middleware('auth');
-
-Route::get('/buku/{id}/edit', [BukuController::class, 'edit'])
-    ->middleware(['auth', 'admin']);
-
-Route::put('/buku/{id}', [BukuController::class, 'update'])
-    ->middleware(['auth', 'admin']);
-
-Route::delete('/buku/{id}', [BukuController::class, 'destroy'])
-    ->middleware(['auth', 'admin']);
-
-Route::get('/buku/create', [BukuController::class, 'create'])
-    ->middleware(['auth', 'admin']);
-
-Route::post('/buku', [BukuController::class, 'store'])
-    ->middleware(['auth', 'admin']);
-
-Route::get('/pinjam/{id}', [TransaksiController::class, 'pinjam'])
-    ->middleware('auth');
-
-Route::post('/kembali/{id}', [TransaksiController::class, 'kembali'])
-    ->middleware('auth');
-
-// Route::get('/riwayat', [Controller::class, 'riwayat'])
-//     ->middleware('auth');
-
-// Route::post('/hilang/{id}', [TransaksiController::class, 'hilang']);
-
+/*
+|--------------------------------------------------------------------------
+| Protected Routes (Harus Login)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
 
-    Route::resource('users', UserController::class);
-    Route::resource('kategori', KategoriBukuController::class);
-    Route::resource('buku', BukuController::class);
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/admin/transaksi', [TransaksiController::class, 'adminTransaksi']);
-    // Route::get('/admin/transaksi', [TransaksiController::class, 'adminIndex']);
-
-    Route::post('/admin/transaksi/{id}/kembali', [TransaksiController::class, 'kembali']);
-    Route::post('/admin/transaksi/{id}/hilang', [TransaksiController::class, 'hilang']);
-    Route::post('/admin/transaksi/{id}/setujui', [TransaksiController::class, 'setujuiPeminjaman']);
-    Route::post('/admin/transaksi/{id}/tolak', [TransaksiController::class, 'tolakPeminjaman']);
-    Route::get('/home/buku', [HomeController::class, 'index'])->name('home.buku');
+    // --- Akses Member (User) ---
     Route::get('/home/riwayat', [HomeController::class, 'riwayat'])->name('home.riwayat');
-    Route::get('/home/show/{id}', [HomeController::class, 'show'])->name('home.show');
+    Route::get('/pinjam/{id}', [TransaksiController::class, 'pinjam'])->name('transaksi.pinjam');
+    Route::post('/kembali/{id}', [TransaksiController::class, 'kembali'])->name('transaksi.kembali');
 
-});
+    // Pengaturan Profil
+    Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');
+    Route::put('/pengaturan/update', [PengaturanController::class, 'update'])->name('pengaturan.update');
 
-Route::middleware(['auth'])->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Routes (Hanya Admin)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('admin')->group(function () {
+        Route::get('/admin/dashboard', [DashboardController::class, 'adminindex'])->name('admin.dashboard');
 
-    Route::get('/admin/laporan', [LaporanController::class, 'index']);
-    Route::get('/admin/laporan/user/{user}', [LaporanController::class, 'userPdf']);
+        // Resource CRUD
+        Route::resource('users', UserController::class);
+        Route::resource('kategori', KategoriBukuController::class);
+        Route::resource('bukus', BukuController::class);
+        Route::resource('penulis', PenulisController::class);
+        Route::resource('penerbit', PenerbitController::class);
 
+        // Manajemen Transaksi Admin
+        Route::prefix('admin/transaksi')->group(function () {
+            Route::get('/', [TransaksiController::class, 'adminTransaksi'])->name('admin.transaksi.index');
+            Route::post('/{id}/kembali', [TransaksiController::class, 'kembali']);
+            Route::post('/{id}/hilang', [TransaksiController::class, 'hilang']);
+            Route::post('/{id}/setujui', [TransaksiController::class, 'setujuiPeminjaman']);
+            Route::post('/{id}/tolak', [TransaksiController::class, 'tolakPeminjaman']);
+        });
+
+        // Laporan
+        Route::get('/admin/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/admin/laporan/user/{user}', [LaporanController::class, 'userPdf'])->name('laporan.userPdf');
+    });
 });

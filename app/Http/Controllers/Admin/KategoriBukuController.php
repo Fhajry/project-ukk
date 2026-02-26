@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
+use App\Http\Controllers\Controller;
+
 
 use App\Models\KategoriBuku;
 use Illuminate\Http\Request;
@@ -9,15 +11,8 @@ class KategoriBukuController extends Controller
 {
     public function index()
     {
-
         $kategori = KategoriBuku::latest()->get();
-
         return view('admin.kategori.index', compact('kategori'));
-    }
-
-    public function create()
-    {
-        return view('admin.kategori.create');
     }
 
     public function store(Request $request)
@@ -29,12 +24,6 @@ class KategoriBukuController extends Controller
         return redirect()->route('kategori.index')->with('sukses', 'Kategori berhasil ditambahkan!');
     }
 
-    public function edit($id)
-    {
-        $kategori = KategoriBuku::findOrFail($id);
-
-        return view('admin.kategori.edit', compact('kategori'));
-    }
 
     public function update(Request $request, $id)
     {
