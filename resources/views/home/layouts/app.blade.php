@@ -113,9 +113,18 @@
     <nav class="navbar navbar-expand-lg fixed-top shadow-sm border-bottom py-3">
         <div class="container">
             {{-- Logo Brand --}}
-            <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="/">
-                <i class="bi bi-book-half fs-4"></i>
-                PerpusKita
+            <a class="navbar-brand d-flex align-items-center gap-3" href="/">
+
+                <img src="{{ asset('assets/logo.jpeg') }}" alt="Logo Perpustakaan"
+                    style="width:50px; height:50px; object-fit:cover;" class="rounded">
+
+                <div class="d-flex flex-column lh-sm">
+                    <span class="fw-bold text-primary fs-5">Perpustakaan</span>
+                    <small class="text-muted" style="font-size: 12px;">
+                        SMKN 2 Padang Panjang
+                    </small>
+                </div>
+
             </a>
 
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"

@@ -10,9 +10,19 @@
             </button>
             @endauth
 
-            <span class="navbar-brand fw-semibold mb-0 text-dark">
-                Perpustakaan
-            </span>
+            <a href="/" class="navbar-brand d-flex align-items-center gap-3 mb-0">
+
+                <img src="{{ asset('assets/logo.jpeg') }}" alt="Logo Perpustakaan"
+                    style="width:45px; height:45px; object-fit:cover;" class="rounded">
+
+                <div class="d-flex flex-column lh-sm">
+                    <span class="fw-bold text-dark">Perpustakaan</span>
+                    <small class="text-muted" style="font-size:12px;">
+                        SMKN 2 Padang Panjang
+                    </small>
+                </div>
+
+            </a>
         </div>
 
         @auth
