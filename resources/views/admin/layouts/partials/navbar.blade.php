@@ -10,19 +10,17 @@
             </button>
             @endauth
 
-            <a href="/" class="navbar-brand d-flex align-items-center gap-3 mb-0">
 
-                <img src="{{ asset('assets/logo.jpeg') }}" alt="Logo Perpustakaan"
-                    style="width:45px; height:45px; object-fit:cover;" class="rounded">
+            <img src="{{ asset('assets/logo.jpeg') }}" alt="Logo Perpustakaan"
+                style="width:45px; height:45px; object-fit:cover;" class="rounded">
 
-                <div class="d-flex flex-column lh-sm">
-                    <span class="fw-bold text-dark">Perpustakaan</span>
-                    <small class="text-muted" style="font-size:12px;">
-                        SMKN 2 Padang Panjang
-                    </small>
-                </div>
+            <div class="d-flex flex-column lh-sm">
+                <span class="fw-bold text-dark">Perpustakaan</span>
+                <small class="text-muted" style="font-size:12px;">
+                    SMKN 2 Padang Panjang
+                </small>
+            </div>
 
-            </a>
         </div>
 
         @auth
@@ -36,9 +34,13 @@
                 {{ auth()->user()->role }}
             </span>
 
-            <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger">
-                Logout
-            </a>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="dropdown-item py-2 text-danger fw-bold">
+                    <i class="bi bi-box-arrow-right me-2"></i>Keluar
+                </button>
+            </form>
+
 
         </div>
         @endauth

@@ -62,7 +62,7 @@
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
                 <i class="bi bi-people text-success mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">{{ $data['totalUser'] ?? 0 }}</h3>
+                <h3 class="fw-bold text-dark mb-0">{{ $data['totalUser'        ] ?? 0 }}</h3>
                 <small class="text-muted">Total Anggota</small>
             </div>
         </div>
@@ -82,7 +82,7 @@
         </div>
         @else
 
-        <div class="col-md-4">
+        {{-- <div class="col-md-4">
             <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
                 <i class="bi bi-exclamation-triangle text-warning mb-2" style="font-size: 2.5rem;"></i>
                 <h3 class="fw-bold text-dark mb-0">{{ $data['telat'] ?? 0 }}</h3>
@@ -95,7 +95,7 @@
                 <h3 class="fw-bold text-dark mb-0">Rp {{ number_format($data['totalDenda'] ?? 0, 0, ',', '.') }}</h3>
                 <small class="text-muted">Tagihan Denda</small>
             </div>
-        </div>
+        </div> --}}
         @endif
     </div>
     @endguest

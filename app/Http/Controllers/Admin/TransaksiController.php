@@ -10,15 +10,19 @@ use App\Models\Transaksi;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Http\Request; 
 
 class TransaksiController extends Controller
 {
     public function pinjam($id)
     {
+        if (Auth::user()->role !== 'user') {
+            abort(403);
+        }
+
         $buku = Buku::findOrFail($id);
         $pengaturan = Pengaturan::first();
 
@@ -164,14 +168,11 @@ class TransaksiController extends Controller
         return back()->with('success', 'Buku ditandai hilang. Denda Rp '.number_format($pengaturan->denda_hilang, 0, ',', '.'));
     }
 
-
-
     public function adminTransaksi(Request $request)
     {
         if (Auth::user()->role !== 'admin') {
             abort(403);
         }
-
 
         // Mulai Query dengan relasi
         $query = Transaksi::with(['user', 'buku']);
@@ -179,15 +180,15 @@ class TransaksiController extends Controller
         // 1. Filter Pencarian (Nama User ATAU Judul Buku)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 // Cari di relasi tabel users
-                $q->whereHas('user', function($userQuery) use ($search) {
+                $q->whereHas('user', function ($userQuery) use ($search) {
                     $userQuery->where('name', 'like', "%{$search}%");
                 })
                 // ATAU Cari di relasi tabel bukus
-                ->orWhereHas('buku', function($bukuQuery) use ($search) {
-                    $bukuQuery->where('judul', 'like', "%{$search}%");
-                });
+                    ->orWhereHas('buku', function ($bukuQuery) use ($search) {
+                        $bukuQuery->where('judul', 'like', "%{$search}%");
+                    });
             });
         }
 

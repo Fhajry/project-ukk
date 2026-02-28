@@ -11,31 +11,7 @@ use App\Http\Controllers\Admin\TransaksiController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
-
-// Route untuk "mengakali" symlink yang error di Linux
-// Route::get('/storage/buku/{filename}', function ($filename) {
-//     $path = 'public/buku/' . $filename;
-
-//     // Cek apakah file benar-benar ada di folder storage/app/public/buku
-//     if (!Storage::exists($path)) {
-//         abort(404);
-//     }
-
-//     // Ambil file dan tipe mimenya (jpg/png)
-//     $file = Storage::get($path);
-//     $type = Storage::mimeType($path);
-
-//     // Tampilkan gambar langsung ke browser
-//     return Response::make($file, 200)->header("Content-Type", $type);
-// });
-/*
-|--------------------------------------------------------------------------
-| Public Routes (Bisa diakses tanpa login)
-|--------------------------------------------------------------------------
-*/
 
 Route::get('/', function () {
     return redirect()->route('home.dashboard');

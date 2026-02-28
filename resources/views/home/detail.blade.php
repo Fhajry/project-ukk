@@ -64,11 +64,15 @@
 
                     <div class="mt-5 d-flex gap-2">
                         @auth
+                        @if(auth()->user()->role ==='user')
+
                         @if($buku->stok > 0)
-                        <button onclick="konfirmasiPinjam('{{ $buku->id }}', '{{ $buku->judul }}')"
+                        <button
+                            onclick="konfirmasiPinjam('{{ route('transaksi.pinjam', $buku->id) }}', '{{ addslashes($buku->judul) }}')"
                             class="btn btn-primary px-5 py-2 rounded-pill shadow">
                             <i class="bi bi-bookmark-plus me-2"></i>Pinjam Buku
                         </button>
+                        @endif
                         @endif
                         @else
                         <a href="/login" class="btn btn-outline-primary px-5 py-2 rounded-pill">Login untuk Meminjam</a>
@@ -83,19 +87,33 @@
 </div>
 
 <script>
-    function konfirmasiPinjam(id, judul) {
+    function konfirmasiPinjam(actionUrl, judul) {
         Swal.fire({
-            title: 'Konfirmasi Pinjam',
-            text: "Ajukan peminjaman untuk buku '" + judul + "'?",
-            icon: 'info',
+            title: 'Pinjam Buku?',
+            text: "Apakah Anda ingin meminjam '" + judul + "'?",
+            icon: 'question',
             showCancelButton: true,
-            confirmButtonText: 'Ya, Ajukan!',
-            cancelButtonText: 'Batal',
             confirmButtonColor: '#0d6efd',
-            borderRadius: '15px'
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Pinjam!',
+            cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = "/admin/pinjam/" + id;
+                // 1. Buat form bayangan secara dinamis
+                let form = document.createElement('form');
+                form.action = actionUrl;
+                form.method = 'POST'; // Memaksa metode POST agar cocok dengan web.php
+
+                // 2. Tambahkan token keamanan bawaan Laravel (Wajib untuk POST)
+                let csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // 3. Masukkan form ke dalam halaman dan tekan tombol submit otomatis
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     }

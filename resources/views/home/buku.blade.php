@@ -104,16 +104,21 @@
                         <i class="bi bi-person me-1"></i> {{ $item->penulis->nama_penulis ?? '-' }}
                     </p>
 
-                    <div class="d-grid">
+                    <div class="grid-2 ">
                         @auth
+                        @if(auth()->user()->role ==='user')
                         @if($item->stok > 0)
+
                         <button
                             onclick="konfirmasiPinjam('{{ route('transaksi.pinjam', $item->id) }}', '{{ addslashes($item->judul) }}')"
                             class="btn btn-primary btn-sm rounded-pill shadow-sm w-100">
                             Pinjam Sekarang
                         </button>
+
+
                         @else
                         <button class="btn btn-secondary btn-sm rounded-pill disabled">Stok Habis</button>
+                        @endif
                         @endif
                         @else
                         <a href="/login" class="btn btn-outline-primary btn-sm rounded-pill">Login untuk Pinjam</a>
@@ -124,7 +129,11 @@
         </div>
         @empty
         <div class="col-12 text-center py-5">
-            <i class="bi bi-search fs-1 text-muted opacity-50 d-block mb-3"></i>
+            <i class="bi bi-search fs-1 text-muted opacity-50 d-block mb-3"></i> <button
+                onclick="konfirmasiPinjam('{{ route('transaksi.pinjam', $item->id) }}', '{{ addslashes($item->judul) }}')"
+                class="btn btn-primary btn-sm rounded-pill shadow-sm w-100">
+                Pinjam Sekarang
+            </button>
             <h5 class="text-muted">Buku tidak ditemukan</h5>
             <a href="{{ route('home.buku') }}" class="btn btn-primary mt-2">Reset Filter</a>
         </div>

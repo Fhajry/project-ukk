@@ -43,10 +43,11 @@
                             </select>
                         </div>
 
+
                         <div class="col-md-3">
                             <label class="small fw-bold text-muted mb-1">Filter Penulis</label>
                             <select name="penulis_id" class="form-select">
-                                <option value="">Semua Penulis</option>
+                                <option value=""> Semua Penulis</option>
                                 @foreach($daftar_penulis as $p)
                                 <option value="{{ $p->id }}" {{ request('penulis_id')==$p->id ? 'selected' : '' }}>{{
                                     $p->nama_penulis }}</option>
