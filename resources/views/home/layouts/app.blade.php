@@ -158,6 +158,19 @@
                     </li>
 
                     @else
+                    {{-- Lonceng Notifikasi --}}
+                    <li class="nav-item me-3 d-flex align-items-center">
+                        <a href="{{ route('home.notifikasi') }}" class="nav-link position-relative text-dark">
+                            <i class="bi bi-bell fs-5"></i>
+                            @if(Auth::user()->unreadNotifications->count() > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ Auth::user()->unreadNotifications->count() }}
+                                <span class="visually-hidden">unread messages</span>
+                            </span>
+                            @endif
+                        </a>
+                    </li>
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userDropdown"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">

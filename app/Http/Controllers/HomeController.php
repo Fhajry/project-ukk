@@ -76,4 +76,17 @@ class HomeController extends Controller
 
         return view('home.riwayat', compact('transaksis'));
     }
+
+    public function notifikasi()
+    {
+        $notifikasis = auth()->user()->notifications()->latest()->paginate(10);
+        return view('home.notifikasi', compact('notifikasis'));
+    }
+
+    public function bacaNotifikasi($id)
+    {
+        $notifikasi = auth()->user()->notifications()->findOrFail($id);
+        $notifikasi->markAsRead();
+        return back();
+    }
 }

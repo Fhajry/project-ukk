@@ -155,8 +155,19 @@
                                         class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
                                         Ditolak
                                     </span>
-                                    @else
+                                    @elseif ($item->status === 'siap_diambil')
+                                    <span
+                                        class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                        <i class="bi bi-box-seam me-1"></i> Siap Diambil
+                                    </span>
+                                    @elseif ($item->status === 'batal_otomatis')
+                                    <span class="badge bg-secondary text-white rounded-pill px-3">
+                                        Batal Otomatis
+                                    </span>
+                                    @elseif ($item->status === 'hilang')
                                     <span class="badge bg-dark text-white rounded-pill px-3">Hilang</span>
+                                    @else
+                                    <span class="badge bg-light text-dark rounded-pill px-3">Unknown</span>
                                     @endif
                                 </td>
 
@@ -191,7 +202,17 @@
                                             </button>
                                         </form>
 
-                                        {{-- KONDISI 2: Jika Status DIPINJAM --}}
+                                        {{-- KONDISI 2: Jika Status SIAP DIAMBIL --}}
+                                        @elseif ($item->status === 'siap_diambil')
+                                        <form action="/admin/transaksi/{{ $item->id }}/konfirmasi-pengambilan" method="POST"
+                                            onsubmit="return confirm('Buku telah diambil oleh peminjam?')">
+                                            @csrf
+                                            <button class="btn btn-sm btn-info text-white px-3" title="Sudah Diambil">
+                                                <i class="bi bi-box-arrow-right"></i> Diambil
+                                            </button>
+                                        </form>
+
+                                        {{-- KONDISI 3: Jika Status DIPINJAM --}}
                                         @elseif ($item->status === 'dipinjam')
                                         <form action="/admin/transaksi/{{ $item->id }}/kembali" method="POST"
                                             onsubmit="return confirm('Yakin buku sudah dikembalikan?')">

@@ -66,16 +66,26 @@
                                 <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill px-3">
                                     <i class="bi bi-hourglass-split me-1"></i> Menunggu
                                 </span>
+                                @elseif ($item->status === 'siap_diambil')
+                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                    <i class="bi bi-box-seam me-1"></i> Siap Diambil
+                                </span>
                                 @elseif ($item->status === 'dipinjam')
                                 <span
                                     class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3">
                                     Sedang Dipinjam
+                                </span>
+                                @elseif ($item->status === 'batal_otomatis')
+                                <span class="badge bg-secondary text-white rounded-pill px-3">
+                                    Batal Otomatis
                                 </span>
                                 @elseif ($item->status === 'dikembalikan')
                                 <span
                                     class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
                                     Selesai
                                 </span>
+                                @else
+                                <span class="badge bg-dark text-white rounded-pill px-3">Lainnya</span>
                                 @endif
                             </td>
                             <td>
@@ -95,7 +105,15 @@
                             <td class="text-center">
                                 @if ($item->status === 'menunggu_konfirmasi')
                                 <button class="btn btn-sm btn-light disabled text-success border-0">
-                                    <i class="bi bi-patch-check-fill me-1"></i> menunggu Konfirmasi
+                                    <i class="bi bi-patch-check-fill me-1"></i> Menunggu Konfirmasi
+                                </button>
+                                @elseif ($item->status === 'siap_diambil')
+                                <button class="btn btn-sm btn-info text-white border-0" onclick="alert('Silakan temui admin di perpustakaan dalam 24 jam untuk mengambil buku.')">
+                                    <i class="bi bi-info-circle me-1"></i> Info
+                                </button>
+                                @elseif ($item->status === 'batal_otomatis')
+                                <button class="btn btn-sm btn-light disabled text-danger border-0">
+                                    <i class="bi bi-x-circle-fill me-1"></i> Dibatalkan
                                 </button>
                                 @else
                                 <button class="btn btn-sm btn-light disabled text-success border-0">

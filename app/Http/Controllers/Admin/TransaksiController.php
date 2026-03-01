@@ -8,6 +8,7 @@ use App\Models\Buku;
 use App\Models\Pengaturan;
 use App\Models\Transaksi;
 use App\Models\User;
+use App\Notifications\BukuSiapDiambilNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -57,7 +58,7 @@ class TransaksiController extends Controller
         return redirect()->route('home.buku')->with('success', 'Permintaan peminjaman berhasil dikirim. Menunggu konfirmasi admin.');
     }
 
-    // Fungsi untuk Admin Menyetujui
+    // Fungsi untuk Admin Menyetujui -> Status Siap Diambil
     public function setujuiPeminjaman($id)
     {
         $transaksi = Transaksi::findOrFail($id);
@@ -68,12 +69,33 @@ class TransaksiController extends Controller
         }
 
         $transaksi->update([
+            'status' => 'siap_diambil',
+            'siap_diambil_at' => now(), // Catat waktu kapan buku dinyatakan siap
+        ]);
+        
+        // Kirim notifikasi ke User
+        $transaksi->user->notify(new BukuSiapDiambilNotification($transaksi));
+
+        return back()->with('success', 'Buku siap diambil. Notifikasi telah dikirim ke peminjam.');
+    }
+
+    // Fungsi untuk Admin saat User mengambil buku
+    public function konfirmasiPengambilan($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+
+        // Pastikan statusnya memang sedang siap_diambil
+        if ($transaksi->status !== 'siap_diambil') {
+            return back()->with('error', 'Status transaksi tidak valid');
+        }
+
+        $transaksi->update([
             'status' => 'dipinjam',
-            'tanggal_pinjam' => now(), // Waktu mulai dihitung saat admin klik setuju
-            'tanggal_jatuh_tempo' => now()->addDays(7), // Jatuh tempo 7 hari dari SEKARANG
+            'tanggal_pinjam' => now(), // Waktu pinjam dihitung HANYA saat buku benar-benar diambil
+            'tanggal_jatuh_tempo' => now()->addDays(7), // Jatuh tempo 7 hari dari waktu pengambilan
         ]);
 
-        return back()->with('success', 'Peminjaman disetujui. Waktu pinjam dimulai sekarang.');
+        return back()->with('success', 'Buku telah diambil peminjam. Masa peminjaman dimulai hari ini.');
     }
 
     // Fungsi untuk Admin Menolak

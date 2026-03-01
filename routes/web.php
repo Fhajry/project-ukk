@@ -42,6 +42,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/pinjam/{id}', [TransaksiController::class, 'pinjam'])->name('transaksi.pinjam');
     Route::post('/kembali/{id}', [TransaksiController::class, 'kembali'])->name('transaksi.kembali');
 
+    // Notifikasi
+    Route::get('/home/notifikasi', [HomeController::class, 'notifikasi'])->name('home.notifikasi');
+    Route::post('/home/notifikasi/{id}/baca', [HomeController::class, 'bacaNotifikasi'])->name('home.notifikasi.baca');
+
     // Pengaturan Profil
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');
     Route::put('/pengaturan/update', [PengaturanController::class, 'update'])->name('pengaturan.update');
@@ -67,6 +71,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/{id}/kembali', [TransaksiController::class, 'kembali']);
             Route::post('/{id}/hilang', [TransaksiController::class, 'hilang']);
             Route::post('/{id}/setujui', [TransaksiController::class, 'setujuiPeminjaman']);
+            Route::post('/{id}/konfirmasi-pengambilan', [TransaksiController::class, 'konfirmasiPengambilan']); // <--- BARU
             Route::post('/{id}/tolak', [TransaksiController::class, 'tolakPeminjaman']);
         });
 
