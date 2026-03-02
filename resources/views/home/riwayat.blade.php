@@ -67,7 +67,8 @@
                                     <i class="bi bi-hourglass-split me-1"></i> Menunggu
                                 </span>
                                 @elseif ($item->status === 'siap_diambil')
-                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                <span
+                                    class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
                                     <i class="bi bi-box-seam me-1"></i> Siap Diambil
                                 </span>
                                 @elseif ($item->status === 'dipinjam')
@@ -83,6 +84,10 @@
                                 <span
                                     class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
                                     Selesai
+                                </span>
+                                @elseif ($item->status === 'hilang')
+                                <span class="badge bg-dark text-white rounded-pill px-3">
+                                    Hilang
                                 </span>
                                 @else
                                 <span class="badge bg-dark text-white rounded-pill px-3">Lainnya</span>
@@ -108,7 +113,8 @@
                                     <i class="bi bi-patch-check-fill me-1"></i> Menunggu Konfirmasi
                                 </button>
                                 @elseif ($item->status === 'siap_diambil')
-                                <button class="btn btn-sm btn-info text-white border-0" onclick="alert('Silakan temui admin di perpustakaan dalam 24 jam untuk mengambil buku.')">
+                                <button class="btn btn-sm btn-info text-white border-0"
+                                    onclick="alert('Silakan temui admin di perpustakaan dalam 24 jam untuk mengambil buku.')">
                                     <i class="bi bi-info-circle me-1"></i> Info
                                 </button>
                                 @elseif ($item->status === 'batal_otomatis')

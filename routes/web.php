@@ -14,7 +14,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('home.dashboard');
+    return redirect()->route('home.buku');
 });
 Route::get('/home', [HomeController::class, 'dashboard'])->name('home.dashboard');
 

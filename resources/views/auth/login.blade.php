@@ -19,6 +19,17 @@
         </div>
         @endif
 
+        @if ($errors->any())
+        <div class="alert alert-danger border-0 small py-2">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <ul class="mb-0 ms-2 ps-2">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         <form method="POST" action="/login">
             @csrf
 

@@ -9,6 +9,7 @@ use App\Models\Pengaturan;
 use App\Models\Transaksi;
 use App\Models\User;
 use App\Notifications\BukuSiapDiambilNotification;
+use App\Notifications\BukuDipinjamNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -42,18 +43,20 @@ class TransaksiController extends Controller
             return back()->with('error', 'Anda sudah mengajukan peminjaman untuk buku ini.');
         }
 
-        // Buat Transaksi dengan status Menunggu
-        Transaksi::create([
-            'user_id' => Auth::id(),
-            'buku_id' => $id,
-            'tanggal_pinjam' => now(), // Tanggal kosong karena belum disetujui
-            'tanggal_jatuh_tempo' => now()->addDays($pengaturan->hari_jatuh_tempo),
-            'status' => 'menunggu_konfirmasi', // <--- STATUS BARU
-            'denda' => 0,
-        ]);
+        DB::transaction(function () use ($id, $pengaturan, $buku) {
+            // Buat Transaksi dengan status Menunggu
+            Transaksi::create([
+                'user_id' => Auth::id(),
+                'buku_id' => $id,
+                'tanggal_pinjam' => now(), // Tanggal kosong karena belum disetujui
+                'tanggal_jatuh_tempo' => now()->addDays($pengaturan->hari_jatuh_tempo),
+                'status' => 'menunggu_konfirmasi', // <--- STATUS BARU
+                'denda' => 0,
+            ]);
 
-        // Kurangi stok (Booking buku agar tidak diambil orang lain)
-        $buku->decrement('stok');
+            // Kurangi stok (Booking buku agar tidak diambil orang lain)
+            $buku->decrement('stok');
+        });
 
         return redirect()->route('home.buku')->with('success', 'Permintaan peminjaman berhasil dikirim. Menunggu konfirmasi admin.');
     }
@@ -63,7 +66,7 @@ class TransaksiController extends Controller
     {
         $transaksi = Transaksi::findOrFail($id);
 
-        // Pastikan statusnya memang sedang menunggu
+        // CEk statusnya memang sedang menunggu
         if ($transaksi->status !== 'menunggu_konfirmasi') {
             return back()->with('error', 'Status transaksi tidak valid');
         }
@@ -72,7 +75,7 @@ class TransaksiController extends Controller
             'status' => 'siap_diambil',
             'siap_diambil_at' => now(), // Catat waktu kapan buku dinyatakan siap
         ]);
-        
+
         // Kirim notifikasi ke User
         $transaksi->user->notify(new BukuSiapDiambilNotification($transaksi));
 
@@ -89,11 +92,16 @@ class TransaksiController extends Controller
             return back()->with('error', 'Status transaksi tidak valid');
         }
 
-        $transaksi->update([
-            'status' => 'dipinjam',
-            'tanggal_pinjam' => now(), // Waktu pinjam dihitung HANYA saat buku benar-benar diambil
-            'tanggal_jatuh_tempo' => now()->addDays(7), // Jatuh tempo 7 hari dari waktu pengambilan
-        ]);
+        DB::transaction(function () use ($transaksi) {
+            $transaksi->update([
+                'status' => 'dipinjam',
+                'tanggal_pinjam' => now(), // Waktu pinjam dihitung HANYA saat buku benar-benar diambil
+                'tanggal_jatuh_tempo' => now()->addDays(7), // Jatuh tempo 7 hari dari waktu pengambilan
+            ]);
+            
+            // Kirim notifikasi buku resmi terpinjam
+            $transaksi->user->notify(new BukuDipinjamNotification($transaksi));
+        });
 
         return back()->with('success', 'Buku telah diambil peminjam. Masa peminjaman dimulai hari ini.');
     }
@@ -107,15 +115,18 @@ class TransaksiController extends Controller
             return back()->with('error', 'Status transaksi tidak valid');
         }
 
-        // Ubah status jadi ditolak
-        $transaksi->update([
-            'status' => 'ditolak',
+        DB::transaction(function () use ($transaksi) {
+            // Ubah status jadi ditolak
+            $transaksi->update([
+                'status' => 'ditolak',
+            ]);
 
-        ]);
-
-        // KEMBALIKAN STOK BUKU (Penting!)
-        $buku = Buku::find($transaksi->buku_id);
-        $buku->increment('stok');
+            // KEMBALIKAN STOK BUKU (Penting!)
+            $buku = Buku::find($transaksi->buku_id);
+            if ($buku) {
+                $buku->increment('stok');
+            }
+        });
 
         return back()->with('success', 'Peminjaman ditolak. Stok buku telah dikembalikan.');
     }

@@ -1,103 +1,151 @@
 @extends('home.layouts.app')
-
 @section('content')
-<div class="container py-4">
+<div class="container py-5">
 
-    {{-- HERO SECTION --}}
-    <div class="row align-items-center bg-white rounded-4 shadow-sm p-4 p-md-5 mb-5 border">
-        <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
-            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill mb-3">
-                Hai, {{ auth()->user()->name ?? 'Pengunjung' }}! 👋
-            </span>
-            <h1 class="display-5 fw-bold text-dark mb-3">
-                Jelajahi Dunia Pengetahuan Tanpa Batas
-            </h1>
-            <p class="text-muted fs-5 mb-4">
-                Platform pinjam buku digital yang cepat, mudah, dan transparan. Temukan ratusan koleksi buku fiksi
-                maupun non-fiksi terbaru di sini.
-            </p>
-            <div class="d-flex gap-2 justify-content-center justify-content-lg-start">
-                <a href="{{ route('home.buku') }}" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
-                    <i class="bi bi-search me-2"></i>Cari Buku
-                </a>
-                @if(auth()->check() && auth()->user()->role === 'user')
-                <a href="{{ route('home.riwayat') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">
-                    <i class="bi bi-clock-history me-2"></i>Riwayat
-                </a>
-                @endif
-            </div>
-        </div>
-        <div class="col-lg-5 d-none d-lg-block text-center">
-            {{-- Ilustrasi Dummy (Ganti dengan ilustrasi buku Anda sendiri jika ada) --}}
-            <img src="https://illustrations.popsy.co/amber/student-going-to-school.svg" alt="Ilustrasi Buku"
-                class="img-fluid" style="max-height: 350px;">
+    {{-- HEADER SAMBUTAN --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="fw-bold text-dark mb-1">Selamat Datang, {{ auth()->user()->name }}! 👋</h3>
+            <p class="text-muted">Berikut adalah ringkasan aktivitas perpustakaanmu saat ini.</p>
         </div>
     </div>
 
-    {{-- STATISTIC SECTION --}}
-    @guest
-    <div class="text-center mb-4">
-        <h4 class="fw-bold text-dark">Informasi Perpustakaan</h4>
-        <p class="text-muted small">Ringkasan aktivitas dan koleksi saat ini.</p>
-    </div>
-
+    {{-- WIDGET STATISTIK --}}
     <div class="row g-4 mb-5">
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
-                <i class="bi bi-book text-primary mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">{{ $data['totalBuku'] ?? 0 }}</h3>
-                <small class="text-muted">Total Buku</small>
-            </div>
-        </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
-                <i class="bi bi-journal-bookmark text-primary mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">{{ $data['dipinjam'] ?? 0 }}</h3>
-                <small class="text-muted">Buku Sedang Dipinjam</small>
+            <div class="card border-0 shadow-sm bg-primary text-white h-100 rounded-4">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
+                        style="width: 60px; height: 60px;">
+                        <i class="bi bi-book fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">{{ $sedangDipinjam }}</h3>
+                        <span class="small opacity-75">Buku Dipinjam</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        @else
-        @if(!auth()->check() || auth()->user()->role === 'admin')
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
-                <i class="bi bi-people text-success mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">{{ $data['totalUser'        ] ?? 0 }}</h3>
-                <small class="text-muted">Total Anggota</small>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
-                <i class="bi bi-arrow-repeat text-warning mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">{{ $data['transaksiAktif'] ?? 0 }}</h3>
-                <small class="text-muted">Buku Dipinjam</small>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
-                <i class="bi bi-cash-coin text-danger mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">Rp {{ number_format($data['totalDenda'] ?? 0, 0, ',', '.') }}</h3>
-                <small class="text-muted">Total Denda</small>
-            </div>
-        </div>
-        @else
-
-        {{-- <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
-                <i class="bi bi-exclamation-triangle text-warning mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">{{ $data['telat'] ?? 0 }}</h3>
-                <small class="text-muted">Terlambat Dikembalikan</small>
-            </div>
-        </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center p-4 h-100 rounded-4 bg-white">
-                <i class="bi bi-cash text-danger mb-2" style="font-size: 2.5rem;"></i>
-                <h3 class="fw-bold text-dark mb-0">Rp {{ number_format($data['totalDenda'] ?? 0, 0, ',', '.') }}</h3>
-                <small class="text-muted">Tagihan Denda</small>
+            <div class="card border-0 shadow-sm bg-warning text-dark h-100 rounded-4">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="bg-dark bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
+                        style="width: 60px; height: 60px;">
+                        <i class="bi bi-box-seam fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">{{ $siapDiambil }}</h3>
+                        <span class="small opacity-75 fw-medium">Buku Siap Diambil</span>
+                    </div>
+                </div>
             </div>
-        </div> --}}
-        @endif
+        </div>
+
+        <div class="col-md-4">
+            <div
+                class="card border-0 shadow-sm {{ $totalDenda > 0 ? 'bg-danger' : 'bg-success' }} text-white h-100 rounded-4">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
+                        style="width: 60px; height: 60px;">
+                        <i class="bi bi-cash-coin fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">Rp {{ number_format($totalDenda, 0, ',', '.') }}</h3>
+                        <span class="small opacity-75">Total Denda Kamu</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    @endguest
+
+    {{-- PANEL PEMINJAMAN AKTIF --}}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 d-flex align-items-center">
+                    <i class="bi bi-activity text-primary fs-4 me-2"></i>
+                    <h5 class="mb-0 fw-bold">Peminjaman Aktif</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Judul Buku</th>
+                                    <th>Tanggal Pinjam</th>
+                                    <th>Batas Kembali</th>
+                                    <th>Status Saat Ini</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($transaksiAktif as $trx)
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            @if($trx->buku->gambar)
+                                            <img src="{{ asset('storage/'.$trx->buku->gambar) }}" alt="Cover"
+                                                class="rounded shadow-sm me-3"
+                                                style="width: 45px; height: 60px; object-fit: cover;">
+                                            @else
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center me-3"
+                                                style="width: 45px; height: 60px;">
+                                                <i class="bi bi-book text-muted"></i>
+                                            </div>
+                                            @endif
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">{{ $trx->buku->judul }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ $trx->tanggal_pinjam ? \Carbon\Carbon::parse($trx->tanggal_pinjam)->format('d
+                                        M Y') : '-' }}</td>
+                                    <td>
+                                        @if($trx->tanggal_jatuh_tempo)
+                                        <span class="fw-medium text-danger">{{
+                                            \Carbon\Carbon::parse($trx->tanggal_jatuh_tempo)->format('d M Y') }}</span>
+                                        @else
+                                        -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($trx->status === 'menunggu_konfirmasi')
+                                        <span class="badge bg-secondary rounded-pill px-3 py-2"><i
+                                                class="bi bi-hourglass me-1"></i> Menunggu Konfirmasi</span>
+                                        @elseif($trx->status === 'siap_diambil')
+                                        {{-- Ini yang nanti akan kita beri animasi/timer hitung mundur --}}
+                                        <span
+                                            class="badge bg-warning text-dark rounded-pill px-3 py-2 border border-warning"><i
+                                                class="bi bi-bell-fill me-1"></i> Segera Ambil!</span>
+                                        @elseif($trx->status === 'dipinjam')
+                                        <span class="badge bg-primary rounded-pill px-3 py-2"><i
+                                                class="bi bi-book-half me-1"></i> Sedang Dipinjam</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                            Kamu tidak memiliki peminjaman buku yang aktif saat ini.
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-3">
+                <a href="{{ route('home.riwayat') }}" class="text-decoration-none fw-medium">Lihat Semua Riwayat <i
+                        class="bi bi-arrow-right"></i></a>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 @endsection

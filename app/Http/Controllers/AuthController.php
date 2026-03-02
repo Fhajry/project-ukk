@@ -28,9 +28,9 @@ class AuthController extends Controller
             } else {
                 return redirect()->route('home.dashboard')->with('success', 'Berhasil login!');
             }
-
-            return back()->with('error', 'Email atau Password salah');
         }
+
+        return back()->with('error', 'Email atau Password salah');
     }
 
     public function logout(Request $request)

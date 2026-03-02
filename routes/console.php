@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('transaksi:auto-batal')->hourly();
+Schedule::command('transaksi:notif-terlambat')->daily();

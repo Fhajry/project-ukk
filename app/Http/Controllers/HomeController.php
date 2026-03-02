@@ -15,24 +15,23 @@ class HomeController extends Controller
 {
     public function dashboard()
     {
-        $user = Auth::user();
+        $user = auth()->user();
 
-        $data = [
-            'totalBuku' => Buku::count(),
-            'totalUser' => User::where('role', 'user')->count(),
-            'transaksiAktif' => Transaksi::whereIn('status', ['dipinjam', 'menunggu_konfirmasi'])->count(),
-            'totalDenda' => Transaksi::sum('denda'), // Sesuaikan dengan logika Anda
-        ];
+        // 1. Ambil Statistik Ringkas
+        $sedangDipinjam = \App\Models\Transaksi::where('user_id', $user->id)->where('status', 'dipinjam')->count();
+        //  siapkan status 'siap_diambil' untuk fitur otomatisasi
+        $siapDiambil = \App\Models\Transaksi::where('user_id', $user->id)->where('status', 'siap_diambil')->count();
+        $totalDenda = \App\Models\Transaksi::where('user_id', $user->id)->sum('denda');
+        $telat = \App\Models\Transaksi::where('user_id', $user->id)->where('status', 'dipinjam')->where('tanggal_jatuh_tempo', '<', now())->count();
 
-        // Jika yang login adalah user biasa, tambahkan data personalnya
-        if (auth()->check() && auth()->user()->role === 'user') {
-            $userId = auth()->id();
-            $data['dipinjam'] = Transaksi::where('user_id', $userId)->where('status', 'dipinjam')->count();
-            $data['telat'] = Transaksi::where('user_id', $userId)->where('status', 'dipinjam')->where('tanggal_jatuh_tempo', '<', now())->count();
-            $data['totalDenda'] = Transaksi::where('user_id', $userId)->sum('denda');
-        }
+        // 2. Ambil Transaksi Aktif (Menunggu, Siap Diambil, Dipinjam)
+        $transaksiAktif = \App\Models\Transaksi::with('buku')
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['menunggu_konfirmasi', 'siap_diambil', 'dipinjam'])
+            ->latest()
+            ->get();
 
-        return view('home.dashboard', compact('data'));
+        return view('home.dashboard', compact('sedangDipinjam', 'siapDiambil', 'totalDenda', 'telat', 'transaksiAktif'));
     }
 
     public function buku(Request $request)
@@ -72,6 +71,7 @@ class HomeController extends Controller
     {
         $transaksis = Transaksi::with('buku')
             ->where('user_id', Auth::id())
+            ->latest()
             ->get();
 
         return view('home.riwayat', compact('transaksis'));
@@ -80,6 +80,7 @@ class HomeController extends Controller
     public function notifikasi()
     {
         $notifikasis = auth()->user()->notifications()->latest()->paginate(10);
+
         return view('home.notifikasi', compact('notifikasis'));
     }
 
@@ -87,6 +88,7 @@ class HomeController extends Controller
     {
         $notifikasi = auth()->user()->notifications()->findOrFail($id);
         $notifikasi->markAsRead();
+
         return back();
     }
 }

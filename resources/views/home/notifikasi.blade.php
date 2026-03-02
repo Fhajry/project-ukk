@@ -18,12 +18,20 @@
 
                 <div class="card-body">
                     @forelse($notifikasis as $notif)
-                    <div class="d-flex align-items-start border-bottom py-3 {{ is_null($notif->read_at) ? 'bg-light rounded px-2' : '' }}">
+                    <div
+                        class="d-flex align-items-start border-bottom py-3 {{ is_null($notif->read_at) ? 'bg-light rounded px-2' : '' }}">
                         <div class="me-3 mt-1 text-primary">
                             @if($notif->data['type'] === 'siap_diambil')
-                            <i class="bi bi-box-seam fs-3 {{ is_null($notif->read_at) ? 'text-danger' : 'text-primary' }}"></i>
+                            <i
+                                class="bi bi-box-seam fs-3 {{ is_null($notif->read_at) ? 'text-info' : 'text-secondary' }}"></i>
+                            @elseif($notif->data['type'] === 'dipinjam')
+                            <i
+                                class="bi bi-book fs-3 {{ is_null($notif->read_at) ? 'text-success' : 'text-secondary' }}"></i>
+                            @elseif($notif->data['type'] === 'terlambat')
+                            <i
+                                class="bi bi-exclamation-triangle-fill fs-3 {{ is_null($notif->read_at) ? 'text-danger' : 'text-secondary' }}"></i>
                             @else
-                            <i class="bi bi-info-circle fs-3"></i>
+                            <i class="bi bi-info-circle fs-3 text-secondary"></i>
                             @endif
                         </div>
                         <div class="flex-grow-1">
@@ -33,11 +41,13 @@
                             <small class="text-muted d-block mb-2">
                                 {{ $notif->created_at->diffForHumans() }}
                             </small>
-                            
+
                             @if(is_null($notif->read_at))
-                            <form action="{{ route('home.notifikasi.baca', $notif->id) }}" method="POST" class="d-inline">
+                            <form action="{{ route('home.notifikasi.baca', $notif->id) }}" method="POST"
+                                class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-3" style="font-size: 0.75rem;">
+                                <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-3"
+                                    style="font-size: 0.75rem;">
                                     Tandai Dibaca
                                 </button>
                             </form>

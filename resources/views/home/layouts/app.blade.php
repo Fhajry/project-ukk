@@ -133,8 +133,8 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                {{-- Menu Kiri --}}
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 mx-lg-4 gap-lg-3">
+                {{-- Menu Kanan --}}
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-3 align-items-lg-center">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('/') || request()->routeIs('home.dashboard') ? 'active' : '' }}"
                             href="{{ route('home.dashboard') }}">Beranda</a>
@@ -163,7 +163,9 @@
                         <a href="{{ route('home.notifikasi') }}" class="nav-link position-relative text-dark">
                             <i class="bi bi-bell fs-5"></i>
                             @if(Auth::user()->unreadNotifications->count() > 0)
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                style="font-size: 0.65rem;">
                                 {{ Auth::user()->unreadNotifications->count() }}
                                 <span class="visually-hidden">unread messages</span>
                             </span>
