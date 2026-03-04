@@ -10,9 +10,32 @@
         </div>
     </div>
 
+    {{-- ALERT DENDA BELUM LUNAS --}}
+    @php
+        // Ambil transaksi user yang sedang login dengan status denda belum lunas
+        $totalHutang = \App\Models\Transaksi::where('user_id', auth()->id())
+            ->where('status_denda', 'belum_lunas')
+            ->sum('denda');
+    @endphp
+    
+    @if ($totalHutang > 0)
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger d-flex align-items-center border-0 shadow-sm m-0" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Perhatian!</strong> Anda memiliki tagihan denda keterlambatan buku yang belum dilunasi sebesar 
+                    <strong class="fs-5">Rp {{ number_format($totalHutang, 0, ',', '.') }}</strong>. 
+                    <br>Mohon segera lunasi di meja administrasi perpustakaan.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- WIDGET STATISTIK --}}
     <div class="row g-4 mb-5">
-        <div class="col-md-4">
+        <div class="col-md-3 col-sm-6">
             <div class="card border-0 shadow-sm bg-primary text-white h-100 rounded-4">
                 <div class="card-body d-flex align-items-center p-4">
                     <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
@@ -27,7 +50,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3 col-sm-6">
             <div class="card border-0 shadow-sm bg-warning text-dark h-100 rounded-4">
                 <div class="card-body d-flex align-items-center p-4">
                     <div class="bg-dark bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
@@ -42,17 +65,32 @@
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div
-                class="card border-0 shadow-sm {{ $totalDenda > 0 ? 'bg-danger' : 'bg-success' }} text-white h-100 rounded-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm bg-info text-white h-100 rounded-4">
                 <div class="card-body d-flex align-items-center p-4">
                     <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
                         style="width: 60px; height: 60px;">
-                        <i class="bi bi-cash-coin fs-3"></i>
+                        <i class="bi bi-cash-stack fs-3"></i>
                     </div>
                     <div>
                         <h3 class="mb-0 fw-bold">Rp {{ number_format($totalDenda, 0, ',', '.') }}</h3>
-                        <span class="small opacity-75">Total Denda Kamu</span>
+                        <span class="small opacity-75">Total Denda</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div
+                class="card border-0 shadow-sm {{ $dendaBelumLunas > 0 ? 'bg-danger' : 'bg-success' }} text-white h-100 rounded-4">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
+                        style="width: 60px; height: 60px;">
+                        <i class="bi bi-exclamation-circle fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">Rp {{ number_format($dendaBelumLunas, 0, ',', '.') }}</h3>
+                        <span class="small opacity-75">Denda Belum Dibayar</span>
                     </div>
                 </div>
             </div>

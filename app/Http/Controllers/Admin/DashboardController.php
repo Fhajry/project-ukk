@@ -21,6 +21,7 @@ class DashboardController extends Controller
                 'totalUser' => User::where('role', 'user')->count(),
                 'transaksiAktif' => Transaksi::where('status', 'dipinjam')->count(),
                 'totalDenda' => Transaksi::sum('denda'),
+                'dendaBelumLunas' => Transaksi::where('status_denda', 'belum_lunas')->sum('denda'),
             ];
 
             return view('admin.dashboard', compact('data'));

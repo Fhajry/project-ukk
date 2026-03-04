@@ -61,11 +61,24 @@
         <div class="col-md-3">
             <div class="card shadow-sm border-0 text-center p-4 h-100 rounded-4">
                 <div class="mb-2">
-                    <i class="bi bi-cash-coin text-danger" style="font-size: 2.5rem;"></i>
+                    <i class="bi bi-cash-stack text-info" style="font-size: 2.5rem;"></i>
                 </div>
                 <small class="text-muted mb-1">Total Denda</small>
                 <h3 class="fw-bold text-dark mb-0">
                     Rp {{ number_format($data['totalDenda'] ?? 0, 0, ',', '.') }}
+                </h3>
+            </div>
+        </div>
+
+        {{-- ADMIN: DENDA BELUM DIBAYAR --}}
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-4 h-100 rounded-4">
+                <div class="mb-2">
+                    <i class="bi bi-exclamation-circle {{ ($data['dendaBelumLunas'] ?? 0) > 0 ? 'text-danger' : 'text-success' }}" style="font-size: 2.5rem;"></i>
+                </div>
+                <small class="text-muted mb-1">Denda Belum Dibayar</small>
+                <h3 class="fw-bold {{ ($data['dendaBelumLunas'] ?? 0) > 0 ? 'text-danger' : 'text-success' }} mb-0">
+                    Rp {{ number_format($data['dendaBelumLunas'] ?? 0, 0, ',', '.') }}
                 </h3>
             </div>
         </div>

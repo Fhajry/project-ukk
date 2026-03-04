@@ -30,7 +30,7 @@ class AutoNotifTerlambat extends Command
         $hariIni = now()->startOfDay();
 
         // Cari transaksi yang masih 'dipinjam' dan tanggal jatuh tempo sudah lewat
-        $transaksis = Transaksi::with('user') // ⬅️ EAGER LOADING untuk hindari N+1 query
+        $transaksis = Transaksi::with('user') 
             ->where('status', 'dipinjam')
             ->where('tanggal_jatuh_tempo', '<', $hariIni)
             ->get();
@@ -38,9 +38,6 @@ class AutoNotifTerlambat extends Command
         $count = 0;
 
         foreach ($transaksis as $trx) {
-            // Bisa tambahkan logika agar notifikasi hanya dikirim sekali sehari
-            // menggunakan table log-notifikasi atau mengecek relasi history notif jika diperlukan.
-            // Saat ini kita langsung trigger notifikasinya:
             $trx->user->notify(new BukuTerlambatNotification($trx));
             $count++;
         }

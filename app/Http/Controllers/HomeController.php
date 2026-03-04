@@ -22,6 +22,7 @@ class HomeController extends Controller
         //  siapkan status 'siap_diambil' untuk fitur otomatisasi
         $siapDiambil = \App\Models\Transaksi::where('user_id', $user->id)->where('status', 'siap_diambil')->count();
         $totalDenda = \App\Models\Transaksi::where('user_id', $user->id)->sum('denda');
+        $dendaBelumLunas = \App\Models\Transaksi::where('user_id', $user->id)->where('status_denda', 'belum_lunas')->sum('denda');
         $telat = \App\Models\Transaksi::where('user_id', $user->id)->where('status', 'dipinjam')->where('tanggal_jatuh_tempo', '<', now())->count();
 
         // 2. Ambil Transaksi Aktif (Menunggu, Siap Diambil, Dipinjam)
@@ -31,7 +32,7 @@ class HomeController extends Controller
             ->latest()
             ->get();
 
-        return view('home.dashboard', compact('sedangDipinjam', 'siapDiambil', 'totalDenda', 'telat', 'transaksiAktif'));
+        return view('home.dashboard', compact('sedangDipinjam', 'siapDiambil', 'totalDenda', 'dendaBelumLunas', 'telat', 'transaksiAktif'));
     }
 
     public function buku(Request $request)

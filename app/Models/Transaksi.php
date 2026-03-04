@@ -14,6 +14,7 @@ class Transaksi extends Model
         'tanggal_kembali',
         'siap_diambil_at',     // ⬅️ TAMBAH BARU
         'status',
+        'status_denda',        // ⬅️ TAMBAH BARU
         'denda',               // ⬅️ TAMBAH
     ];
 

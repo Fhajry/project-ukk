@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/{id}/setujui', [TransaksiController::class, 'setujuiPeminjaman']);
             Route::post('/{id}/konfirmasi-pengambilan', [TransaksiController::class, 'konfirmasiPengambilan']); // <--- BARU
             Route::post('/{id}/tolak', [TransaksiController::class, 'tolakPeminjaman']);
+            Route::post('/{id}/lunasi-denda', [TransaksiController::class, 'lunasiDenda'])->name('admin.transaksi.lunasi');
         });
 
         // Laporan

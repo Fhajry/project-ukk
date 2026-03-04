@@ -8,8 +8,8 @@ use App\Models\Buku;
 use App\Models\Pengaturan;
 use App\Models\Transaksi;
 use App\Models\User;
-use App\Notifications\BukuSiapDiambilNotification;
 use App\Notifications\BukuDipinjamNotification;
+use App\Notifications\BukuSiapDiambilNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,6 +19,48 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TransaksiController extends Controller
 {
+    public function adminTransaksi(Request $request)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        // Mulai Query dengan relasi
+        $query = Transaksi::with(['user', 'buku']);
+
+        // 1. Filter Pencarian (Nama User ATAU Judul Buku)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                // Cari di relasi tabel users
+                $q->whereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%");
+                })
+                // ATAU Cari di relasi tabel bukus
+                    ->orWhereHas('buku', function ($bukuQuery) use ($search) {
+                        $bukuQuery->where('judul', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // 2. Filter Berdasarkan Tanggal Pinjam
+        if ($request->filled('tgl_pinjam')) {
+            $query->whereDate('tanggal_pinjam', $request->tgl_pinjam);
+        }
+
+        // 3. Filter Berdasarkan Tanggal Kembali
+        if ($request->filled('tgl_kembali')) {
+            $query->whereDate('tanggal_kembali', $request->tgl_kembali);
+        }
+
+        // Eksekusi Query (Gunakan paginate agar lebih rapi jika datanya banyak)
+        $transaksis = $query->latest()->get();
+        $pengaturan = \App\Models\Pengaturan::first();
+
+        
+        return view('admin.transaksi', compact('transaksis', 'pengaturan'));
+    }
+
     public function pinjam($id)
     {
         if (Auth::user()->role !== 'user') {
@@ -98,7 +140,7 @@ class TransaksiController extends Controller
                 'tanggal_pinjam' => now(), // Waktu pinjam dihitung HANYA saat buku benar-benar diambil
                 'tanggal_jatuh_tempo' => now()->addDays(7), // Jatuh tempo 7 hari dari waktu pengambilan
             ]);
-            
+
             // Kirim notifikasi buku resmi terpinjam
             $transaksi->user->notify(new BukuDipinjamNotification($transaksi));
         });
@@ -132,7 +174,7 @@ class TransaksiController extends Controller
     }
 
     // USER KEMBALIKAN BUKU
-    public function kembali($id)
+    public function kembali(Request $request, $id)
     {
         if (Auth::user()->role !== 'admin') {
             abort(403);
@@ -152,19 +194,25 @@ class TransaksiController extends Controller
         $tempo = Carbon::parse($transaksi->tanggal_jatuh_tempo)->startOfDay();
 
         $denda = 0;
+        $statusDenda = 'tidak_ada';
 
-        // Hitung denda dinamis jika telat
+        // Hitung denda dinamis jika telat → otomatis jadi piutang (belum_lunas)
         if ($hariIni->gt($tempo)) {
             $hariTerlambat = $tempo->diffInDays($hariIni);
-            $denda = $hariTerlambat * $pengaturan->denda_harian; // ⬅️ Pakai data dari DB
+            $denda = $hariTerlambat * $pengaturan->denda_harian;
+
+            if ($denda > 0) {
+                $statusDenda = 'belum_lunas'; // ⬅️ Otomatis piutang, admin lunasi nanti
+            }
         }
 
         // Gunakan DB Transaction agar aman
-        DB::transaction(function () use ($transaksi, $denda) {
+        DB::transaction(function () use ($transaksi, $denda, $statusDenda) {
             $transaksi->update([
                 'status' => 'dikembalikan',
                 'tanggal_kembali' => now(),
                 'denda' => $denda,
+                'status_denda' => $statusDenda,
             ]);
 
             if ($transaksi->buku) {
@@ -172,7 +220,9 @@ class TransaksiController extends Controller
             }
         });
 
-        $pesanDenda = $denda > 0 ? ' Denda: Rp '.number_format($denda, 0, ',', '.') : ' (Tepat Waktu)';
+        $pesanDenda = $denda > 0
+            ? ' Denda: Rp '.number_format($denda, 0, ',', '.').' (dicatat sebagai piutang)'
+            : ' (Tepat Waktu)';
 
         return back()->with('success', 'Buku berhasil dikembalikan.'.$pesanDenda);
     }
@@ -196,63 +246,33 @@ class TransaksiController extends Controller
         $transaksi->update([
             'status' => 'hilang',
             'denda' => $pengaturan->denda_hilang, // ⬅️ Pakai data dari DB
+            'status_denda' => 'belum_lunas', // ⬅️ Buku hilang otomatis jadi piutang
+            'tanggal_kembali' => null,       // Tidak ada tanggal kembali karena hilang
         ]);
 
         return back()->with('success', 'Buku ditandai hilang. Denda Rp '.number_format($pengaturan->denda_hilang, 0, ',', '.'));
     }
 
-    public function adminTransaksi(Request $request)
+    // ADMIN MELUNASI DENDA PIUTANG
+    public function lunasiDenda($id)
     {
         if (Auth::user()->role !== 'admin') {
             abort(403);
         }
 
-        // Mulai Query dengan relasi
-        $query = Transaksi::with(['user', 'buku']);
+        $transaksi = Transaksi::findOrFail($id);
 
-        // 1. Filter Pencarian (Nama User ATAU Judul Buku)
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                // Cari di relasi tabel users
-                $q->whereHas('user', function ($userQuery) use ($search) {
-                    $userQuery->where('name', 'like', "%{$search}%");
-                })
-                // ATAU Cari di relasi tabel bukus
-                    ->orWhereHas('buku', function ($bukuQuery) use ($search) {
-                        $bukuQuery->where('judul', 'like', "%{$search}%");
-                    });
-            });
+        if ($transaksi->status_denda !== 'belum_lunas') {
+            return back()->with('error', 'Status denda transaksi ini tidak valid untuk dilunasi.');
         }
 
-        // 2. Filter Berdasarkan Tanggal Pinjam
-        if ($request->filled('tgl_pinjam')) {
-            $query->whereDate('tanggal_pinjam', $request->tgl_pinjam);
-        }
+        $transaksi->update([
+            'status_denda' => 'lunas',
+        ]);
 
-        // 3. Filter Berdasarkan Tanggal Kembali
-        if ($request->filled('tgl_kembali')) {
-            $query->whereDate('tanggal_kembali', $request->tgl_kembali);
-        }
-
-        // Eksekusi Query (Gunakan paginate agar lebih rapi jika datanya banyak)
-        $transaksis = $query->latest()->paginate(15);
-        // Jika tidak mau pakai pagination, ganti paginate(15) menjadi get()
-
-        return view('admin.transaksi', compact('transaksis'));
+        return back()->with('success', 'Denda sebesar Rp '.number_format($transaksi->denda, 0, ',', '.').' untuk '.$transaksi->user->name.' berhasil dilunasi.');
     }
-    // public function adminIndex()
-    // {
-    //     if (Auth::user()->role !== 'admin') {
-    //         abort(403);
-    //     }
 
-    //     $transaksis = Transaksi::with(['user', 'buku'])
-    //         ->orderBy('created_at', 'desc')
-    //         ->get();
-
-    //     return view('admin.transaksi', compact('transaksis'));
-    // }
     public function laporanUser(User $user)
     {
         $transaksis = $user->transaksis()

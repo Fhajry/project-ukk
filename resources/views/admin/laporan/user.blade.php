@@ -63,6 +63,7 @@
                 <th class="text-center">Tempo</th>
                 <th class="text-center">Kembali</th>
                 <th class="text-center">Status</th>
+                <th class="text-center">Status Denda</th>
                 <th class="text-right">Denda</th>
             </tr>
         </thead>
@@ -76,8 +77,7 @@
                 </td>
 
                 <td class="text-center">
-                    {{ $t->tanggal_jatuh_tempo ? \Carbon\Carbon::parse($t->tanggal_jatuh_tempo)->format('d-m-Y') : '-'
-                    }}
+                    {{ $t->tanggal_jatuh_tempo ? \Carbon\Carbon::parse($t->tanggal_jatuh_tempo)->format('d-m-Y') : '-' }}
                 </td>
 
                 <td class="text-center">
@@ -85,16 +85,40 @@
                 </td>
 
                 <td class="text-center">
-                    {{ ucfirst(str_replace('_', ' ', $t->status)) }}
+                    @php
+                        $statusLabel = [
+                            'menunggu_konfirmasi' => 'Menunggu Konfirmasi',
+                            'siap_diambil'        => 'Siap Diambil',
+                            'dipinjam'            => 'Dipinjam',
+                            'dikembalikan'        => 'Dikembalikan',
+                            'ditolak'             => 'Ditolak',
+                            'hilang'              => 'Hilang',
+                        ];
+                    @endphp
+                    {{ $statusLabel[$t->status] ?? ucfirst(str_replace('_', ' ', $t->status)) }}
+                </td>
+
+                <td class="text-center">
+                    @if($t->status_denda === 'lunas')
+                        Lunas
+                    @elseif($t->status_denda === 'belum_lunas')
+                        Belum Lunas
+                    @else
+                        -
+                    @endif
                 </td>
 
                 <td class="text-right">
-                    Rp {{ number_format($t->denda, 0, ',', '.') }}
+                    @if($t->denda > 0)
+                        Rp {{ number_format($t->denda, 0, ',', '.') }}
+                    @else
+                        -
+                    @endif
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center">Belum ada riwayat transaksi.</td>
+                <td colspan="7" class="text-center">Belum ada riwayat transaksi.</td>
             </tr>
             @endforelse
         </tbody>

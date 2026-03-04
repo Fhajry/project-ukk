@@ -24,6 +24,23 @@
             </div>
             @endif
 
+            {{-- ALERT DENDA BELUM LUNAS --}}
+            @php
+            $totalHutang = $transaksis->where('status_denda', 'belum_lunas')->sum('denda');
+            @endphp
+
+            @if ($totalHutang > 0)
+            <div class="alert alert-danger d-flex align-items-center border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Perhatian!</strong> Anda memiliki tagihan denda keterlambatan buku yang belum dilunasi
+                    sebesar
+                    <strong class="fs-5">Rp {{ number_format($totalHutang, 0, ',', '.') }}</strong>.
+                    <br>Mohon segera lunasi di meja administrasi perpustakaan.
+                </div>
+            </div>
+            @endif
+
             {{-- TABLE --}}
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -35,7 +52,7 @@
                             <th class="text-center">Status</th>
                             <th>Jatuh Tempo</th>
                             <th class="text-end">Denda</th>
-                            <th class="text-center">Aksi</th>
+                            <th class="text-center">Status Denda</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,6 +97,10 @@
                                 <span class="badge bg-secondary text-white rounded-pill px-3">
                                     Batal Otomatis
                                 </span>
+                                @elseif ($item->status === 'ditolak')
+                                <span class="badge bg-danger text-white rounded-pill px-3">
+                                    Ditolak
+                                </span>
                                 @elseif ($item->status === 'dikembalikan')
                                 <span
                                     class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
@@ -107,26 +128,21 @@
                                 @endif
                             </td>
 
+                            {{-- 6b. Status Denda --}}
                             <td class="text-center">
-                                @if ($item->status === 'menunggu_konfirmasi')
-                                <button class="btn btn-sm btn-light disabled text-success border-0">
-                                    <i class="bi bi-patch-check-fill me-1"></i> Menunggu Konfirmasi
-                                </button>
-                                @elseif ($item->status === 'siap_diambil')
-                                <button class="btn btn-sm btn-info text-white border-0"
-                                    onclick="alert('Silakan temui admin di perpustakaan dalam 24 jam untuk mengambil buku.')">
-                                    <i class="bi bi-info-circle me-1"></i> Info
-                                </button>
-                                @elseif ($item->status === 'batal_otomatis')
-                                <button class="btn btn-sm btn-light disabled text-danger border-0">
-                                    <i class="bi bi-x-circle-fill me-1"></i> Dibatalkan
-                                </button>
+                                @if ($item->status_denda === 'belum_lunas')
+                                <span class="badge bg-danger rounded-pill px-3">
+                                    <i class="bi bi-clock-history me-1"></i> Belum Lunas
+                                </span>
+                                @elseif ($item->status_denda === 'lunas')
+                                <span class="badge bg-success rounded-pill px-3">
+                                    <i class="bi bi-check-circle me-1"></i> Lunas
+                                </span>
                                 @else
-                                <button class="btn btn-sm btn-light disabled text-success border-0">
-                                    <i class="bi bi-patch-check-fill me-1"></i> Selesai
-                                </button>
+                                <span class="text-muted small">-</span>
                                 @endif
                             </td>
+
 
 
                         </tr>

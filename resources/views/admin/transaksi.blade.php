@@ -91,6 +91,7 @@
                                 <th>Tgl Kembali</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-end">Denda</th>
+                                <th class="text-center">Status Denda</th>
                                 <th class="text-center" style="width: 220px;">Aksi</th>
                             </tr>
                         </thead>
@@ -181,6 +182,21 @@
                                     @endif
                                 </td>
 
+                                {{-- 6b. Status Denda --}}
+                                <td class="text-center">
+                                    @if ($item->status_denda === 'belum_lunas')
+                                    <span class="badge bg-danger rounded-pill px-3">
+                                        <i class="bi bi-clock-history me-1"></i> Belum Lunas
+                                    </span>
+                                    @elseif ($item->status_denda === 'lunas')
+                                    <span class="badge bg-success rounded-pill px-3">
+                                        <i class="bi bi-check-circle me-1"></i> Lunas
+                                    </span>
+                                    @else
+                                    <span class="text-muted small">-</span>
+                                    @endif
+                                </td>
+
                                 {{-- 7. Tombol Aksi --}}
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">
@@ -204,7 +220,8 @@
 
                                         {{-- KONDISI 2: Jika Status SIAP DIAMBIL --}}
                                         @elseif ($item->status === 'siap_diambil')
-                                        <form action="/admin/transaksi/{{ $item->id }}/konfirmasi-pengambilan" method="POST"
+                                        <form action="/admin/transaksi/{{ $item->id }}/konfirmasi-pengambilan"
+                                            method="POST"
                                             onsubmit="return confirm('Buku telah diambil oleh peminjam?')">
                                             @csrf
                                             <button class="btn btn-sm btn-info text-white px-3" title="Sudah Diambil">
@@ -214,8 +231,20 @@
 
                                         {{-- KONDISI 3: Jika Status DIPINJAM --}}
                                         @elseif ($item->status === 'dipinjam')
+
+                                        @php
+                                        $hariIni = now()->startOfDay();
+                                        $tempo = \Carbon\Carbon::parse($item->tanggal_jatuh_tempo)->startOfDay();
+                                        $isTelat = $hariIni->gt($tempo);
+                                        $hariTerlambat = $isTelat ? $tempo->diffInDays($hariIni) : 0;
+                                        $estimasiDenda = $hariTerlambat * ($pengaturan->denda_harian ?? 0);
+                                        $pesanKonfirmasi = $isTelat && $estimasiDenda > 0
+                                            ? 'Buku TERLAMBAT ' . $hariTerlambat . ' hari. Denda Rp ' . number_format($estimasiDenda, 0, ',', '.') . ' akan dicatat sebagai piutang. Proses pengembalian?'
+                                            : 'Yakin buku sudah dikembalikan tepat waktu?';
+                                        @endphp
+
                                         <form action="/admin/transaksi/{{ $item->id }}/kembali" method="POST"
-                                            onsubmit="return confirm('Yakin buku sudah dikembalikan?')">
+                                            onsubmit="return confirm('{{ addslashes($pesanKonfirmasi) }}')">
                                             @csrf
                                             <button class="btn btn-sm btn-primary px-3" title="Proses Pengembalian">
                                                 <i class="bi bi-arrow-return-left me-1"></i> Dikembalikan
@@ -230,7 +259,19 @@
                                             </button>
                                         </form>
 
-                                        {{-- KONDISI 3: Status Lainnya (Arsip) --}}
+                                        {{-- KONDISI 3: Status Lainnya (sudah dikembalikan/hilang) --}}
+
+                                        @endif
+
+                                        {{-- TOMBOL LUNASI DENDA (muncul jika denda belum lunas) --}}
+                                        @if ($item->status_denda === 'belum_lunas')
+                                        <form action="/admin/transaksi/{{ $item->id }}/lunasi-denda" method="POST"
+                                            onsubmit="return confirm('Tandai denda Rp {{ number_format($item->denda, 0) }} dari {{ $item->user->name }} sebagai LUNAS?')">
+                                            @csrf
+                                            <button class="btn btn-sm btn-success px-2" title="Lunasi Denda">
+                                                <i class="bi bi-cash-coin me-1"></i> Lunasi
+                                            </button>
+                                        </form>
                                         @else
                                         <span class="text-muted small">
                                             <i class="bi bi-archive me-1"></i> Arsip
@@ -242,8 +283,7 @@
                             </tr>
                             @empty
                             <tr>
-                                {{-- ⬅️ UBAH COLSPAN MENJADI 7 KARENA ADA PENAMBAHAN KOLOM --}}
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="8" class="text-center py-5">
                                     <div class="d-flex flex-column align-items-center justify-content-center">
                                         <i class="bi bi-inbox fs-1 text-muted opacity-50"></i>
                                         <p class="text-muted mt-2">Belum ada data transaksi.</p>
@@ -253,11 +293,14 @@
                             @endforelse
                         </tbody>
                     </table>
+
                 </div>
 
             </div>
         </div>
     </div>
+
+
 
     @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
